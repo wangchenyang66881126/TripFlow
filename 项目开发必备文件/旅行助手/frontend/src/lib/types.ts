@@ -74,3 +74,39 @@ export interface RouteResponse {
   trip_id: string;
   days: RouteDay[];
 }
+
+export interface NavLeg {
+  leg: number;
+  from_place: string;
+  to_place: string;
+  via: string[];
+  uri: string;
+  web_uri: string;
+  web_basic_uri: string;
+}
+
+export interface NavLink {
+  uri: string;
+  web_uri: string;
+}
+
+// 公交 / 步行 / 骑行逐段链接（百度这三种方式不支持途经点）
+export interface NavSegment {
+  from_place: string;
+  to_place: string;
+  transit: NavLink;
+  walking: NavLink;
+  riding: NavLink;
+}
+
+export interface NavDay {
+  day: number;
+  legs: NavLeg[];
+  segments: NavSegment[];
+}
+
+export interface AppNavResponse {
+  max_via: number;
+  uris: string[];
+  days: NavDay[];
+}

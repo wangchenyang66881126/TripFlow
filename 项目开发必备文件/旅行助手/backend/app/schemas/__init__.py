@@ -1,6 +1,10 @@
 from .schemas import (
     AppNavOut,
     Candidate,
+    NavDay,
+    NavLeg,
+    NavLink,
+    NavSegment,
     PlaceOut,
     PlaceUpdate,
     RouteDay,
@@ -23,5 +27,9 @@ __all__ = [
     "RouteDay",
     "RouteOut",
     "AppNavOut",
+    "NavDay",
+    "NavLeg",
+    "NavLink",
+    "NavSegment",
     "ShareOut",
 ]

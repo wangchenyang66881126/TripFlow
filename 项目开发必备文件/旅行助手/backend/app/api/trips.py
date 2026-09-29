@@ -2,18 +2,19 @@
 from __future__ import annotations
 
 import uuid
-from urllib.parse import quote
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
+from ..core.config import settings
 from ..core.db import get_db
 from ..core.errors import AppError
 from ..models import Place, Task, Trip
-from ..schemas import PlaceUpdate, TripCreate
+from ..schemas import AppNavOut, NavDay, NavLeg, NavSegment, PlaceUpdate, TripCreate
 from ..serializers import serialize_place, serialize_trip
 from ..services import map as map_svc
+from ..services import nav as nav_svc
 from ..services import pipeline, runner
 
 router = APIRouter(prefix="/trips", tags=["trips"])
@@ -117,30 +118,33 @@ def get_map(trip_id: str, day: int | None = None, db: Session = Depends(get_db))
 
 @router.get("/{trip_id}/app-nav")
 def get_app_nav(trip_id: str, db: Session = Depends(get_db)):
+    """唤起百度地图：驾车按天/按段带途经点；公交/步行/骑行逐段。顺序以已生成的动线为准。"""
     trip = _trip_or_404(db, trip_id)
-    days: dict[int, list] = {}
-    for p in trip.places:
-        if not p.skipped and p.lat is not None and p.lng is not None:
-            days.setdefault(p.day, []).append(p)
-    uris = []
-    for day in sorted(days):
-        plist = sorted(days[day], key=lambda p: p.seq)
-        if not plist:
-            continue
-
-        def pt(p):
-            return f"latlng:{p.lat:.6f},{p.lng:.6f}|name:{quote(p.name)}"
-
-        uri = (
-            f"baidumap://map/direction?origin={pt(plist[0])}"
-            f"&destination={pt(plist[-1])}&mode=driving"
-        )
-        if len(plist) > 2:
-            via = "|".join(f"latlng:{p.lat:.6f},{p.lng:.6f}|name:{quote(p.name)}" for p in plist[1:-1])
-            uri += f"&via={via}"
-        uri += "&coord_type=bd09ll&src=tripflow"
-        uris.append(uri)
-    return {"uris": uris}
+    usable = [p for p in trip.places if not p.skipped and p.lat is not None and p.lng is not None]
+    data = pipeline.load_route_json(trip_id)
+    if data:
+        place_by_id = {p.id: p for p in usable}
+        ordered = [(d["day"], [place_by_id[pid] for pid in d["place_ids"] if pid in place_by_id]) for d in data["days"]]
+    else:
+        by_day: dict[int, list] = {}
+        for p in sorted(usable, key=lambda p: (p.day, p.seq)):
+            by_day.setdefault(p.day, []).append(p)
+        ordered = sorted(by_day.items())
+    max_via = settings.baidu_nav_max_via
+    days = []
+    for day, plist in ordered:
+        legs = nav_svc.build_day_legs(plist, trip.city, max_via, settings.baidu_uri_src)
+        segments = nav_svc.build_day_segments(plist, trip.city, settings.baidu_uri_src)
+        if legs:
+            days.append(
+                NavDay(
+                    day=day,
+                    legs=[NavLeg(**leg) for leg in legs],
+                    segments=[NavSegment(**s) for s in segments],
+                )
+            )
+    uris = [leg.uri for d in days for leg in d.legs]
+    return AppNavOut(max_via=max_via, uris=uris, days=days)
 
 
 @router.post("/{trip_id}/export")

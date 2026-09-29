@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, MapPin, Navigation, Share2, Sparkles } from "lucide-react";
 import { api } from "./lib/api";
-import type { Place, RouteResponse } from "./lib/types";
+import type { AppNavResponse, NavLeg, NavLink, Place, RouteResponse } from "./lib/types";
 import PlaceCard from "./components/PlaceCard";
 import RouteView from "./components/RouteView";
+import ScanModal from "./components/ScanModal";
 
 const DEMO_LINK = "https://xhslink.cn/o/10vTPLjLXy7";
 const BRAND = "#4FA83C";
@@ -20,7 +21,9 @@ export default function App() {
   const [title, setTitle] = useState("");
   const [places, setPlaces] = useState<Place[]>([]);
   const [route, setRoute] = useState<RouteResponse | null>(null);
-  const [navUri, setNavUri] = useState("");
+  const [nav, setNav] = useState<AppNavResponse | null>(null);
+  const [scanLeg, setScanLeg] = useState<NavLeg | null>(null);
+  const [navHint, setNavHint] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState("");
   const timerRef = useRef<number | null>(null);
@@ -70,8 +73,7 @@ export default function App() {
           setRoute(r);
           setPhase("route");
           try {
-            const nav = await api.getAppNav(trip);
-            if (nav.uris.length) setNavUri(nav.uris[0]);
+            setNav(await api.getAppNav(trip));
           } catch {
             /* ignore */
           }
@@ -152,12 +154,10 @@ export default function App() {
           const r = await api.getRoute(tripId);
           setRoute(r);
           setPhase("route");
-          setNavUri("");
+          setNav(null);
           api
             .getAppNav(tripId)
-            .then((nav) => {
-              if (nav.uris.length) setNavUri(nav.uris[0]);
-            })
+            .then(setNav)
             .catch(() => {});
         },
         "confirm",
@@ -168,26 +168,47 @@ export default function App() {
     }
   };
 
-  const handleAppNav = async () => {
-    if (!tripId) return;
-    try {
-      const { uris } = await api.getAppNav(tripId);
-      if (!uris.length) {
-        setError("无可用导航");
-        return;
-      }
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile) {
-        window.location.href = uris[0];
-      } else {
-        await handleShare();
-        window.alert(
-          "电脑上没有百度地图 App，跳转需在手机进行。\n分享链接已复制，请用手机浏览器打开即可跳转。",
+  const isMobile = () => {
+    const ua = navigator.userAgent;
+    return (
+      /Android|iPhone|iPad|iPod/i.test(ua) ||
+      (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) // iPadOS 伪装成 Mac
+    );
+  };
+
+  const openInApp = (uri: string) => {
+    // 微信 / QQ 等内置浏览器可能拦截 baidumap://（部分版本会弹确认框放行），先尝试再提示
+    const inApp = /MicroMessenger|QQ\/|Weibo|DingTalk|AliApp/i.test(navigator.userAgent);
+    setNavHint("");
+    window.location.href = uri;
+    // 3 秒后页面仍在前台，多半是没唤起（未安装百度地图或浏览器拦截）
+    window.setTimeout(() => {
+      if (document.visibilityState === "visible") {
+        setNavHint(
+          inApp
+            ? "没有打开百度地图？当前在微信 / QQ 等 App 内置浏览器里，可能被拦截。请点右上角「…」，选择「在浏览器打开」后再点按钮。"
+            : "没有打开百度地图？请确认手机已安装百度地图 App；若仍无反应，换用系统自带浏览器（Safari / Chrome）打开本页再试。",
         );
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "请求失败");
+    }, 3000);
+  };
+
+  // 驾车（含途经点）：电脑上没有 App，弹二维码 + 网页版
+  const handleAppNav = (leg: NavLeg) => {
+    if (!isMobile()) {
+      setScanLeg(leg);
+      return;
     }
+    openInApp(leg.uri);
+  };
+
+  // 公交 / 步行 / 骑行单段：电脑上直接开网页版
+  const handleSegmentNav = (link: NavLink) => {
+    if (!isMobile()) {
+      window.open(link.web_uri, "_blank", "noopener");
+      return;
+    }
+    openInApp(link.uri);
   };
 
   const handleShare = async () => {
@@ -404,8 +425,9 @@ export default function App() {
             </div>
             <RouteView
               route={route}
-              navUri={navUri}
+              nav={nav}
               onAppNav={handleAppNav}
+              onSegmentNav={handleSegmentNav}
               onShare={handleShare}
               onExport={handleExport}
               exporting={exporting}
@@ -414,6 +436,24 @@ export default function App() {
           </section>
         )}
       </main>
+
+      {scanLeg && (
+        <ScanModal
+          url={`${window.location.origin}/share/${tripId}`}
+          leg={scanLeg}
+          onClose={() => setScanLeg(null)}
+        />
+      )}
+      {navHint && (
+        <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
+          <div className="flex max-w-xl items-start gap-3 rounded-2xl bg-[#222] px-4 py-3 text-sm text-white shadow-xl">
+            <span>{navHint}</span>
+            <button onClick={() => setNavHint("")} className="shrink-0 text-white/70 hover:text-white">
+              知道了
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

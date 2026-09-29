@@ -91,8 +91,41 @@ class RouteOut(BaseModel):
     days: list[RouteDay]
 
 
+class NavLeg(BaseModel):
+    leg: int
+    from_place: str
+    to_place: str
+    via: list[str]
+    uri: str  # baidumap:// 唤起 App，含途经点
+    web_uri: str  # 网页版 map.baidu.com，含途经点（非官方格式）
+    web_basic_uri: str  # 网页版官方 URI，仅起终点（兑底）
+
+
+class NavLink(BaseModel):
+    uri: str  # baidumap:// 唤起 App
+    web_uri: str  # 网页版
+
+
+class NavSegment(BaseModel):
+    """公交 / 步行 / 骑行逐段链接（百度这三种方式不支持途经点）。"""
+
+    from_place: str
+    to_place: str
+    transit: NavLink
+    walking: NavLink
+    riding: NavLink
+
+
+class NavDay(BaseModel):
+    day: int
+    legs: list[NavLeg]  # 驾车，含途经点
+    segments: list[NavSegment]
+
+
 class AppNavOut(BaseModel):
-    uris: list[str]
+    max_via: int
+    uris: list[str]  # 所有段按天、按段展开，兼容旧调用
+    days: list[NavDay]
 
 
 class ShareOut(BaseModel):

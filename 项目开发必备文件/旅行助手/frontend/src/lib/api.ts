@@ -1,4 +1,5 @@
 import type {
+  AppNavResponse,
   PlacesResponse,
   RouteResponse,
   Task,
@@ -47,7 +48,7 @@ export const api = {
     request<RouteResponse>(`/api/v1/trips/${tripId}/route`),
 
   getAppNav: (tripId: string) =>
-    request<{ uris: string[] }>(`/api/v1/trips/${tripId}/app-nav`),
+    request<AppNavResponse>(`/api/v1/trips/${tripId}/app-nav`),
 
   createExport: (tripId: string) =>
     request<{ trip_id: string; task_id: string }>(

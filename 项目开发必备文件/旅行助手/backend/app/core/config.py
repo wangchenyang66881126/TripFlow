@@ -26,6 +26,9 @@ class Settings:
         self.deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip()
         self.database_url: str = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR / 'tripflow.db'}")
         self.allow_origins: str = os.getenv("ALLOW_ORIGINS", "*")
+        # 唤起百度地图 App：每段最多途经点数（超出拆段）、调用来源 src
+        self.baidu_nav_max_via: int = int(os.getenv("BAIDU_NAV_MAX_VIA", "15") or 15)
+        self.baidu_uri_src: str = os.getenv("BAIDU_URI_SRC", "webapp.tripflow.tripflow").strip()
 
 
 settings = Settings()
