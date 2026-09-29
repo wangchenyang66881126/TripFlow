@@ -63,7 +63,7 @@ python3.12 -m venv .venv
 ## 密钥（`.env`）
 - `BAIDU_MAP_AK`：百度地图开放平台「服务端」AK
 - `DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` / `DEEPSEEK_BASE_URL`：DeepSeek
-- 浏览器端 AK（JSAPI GL 交互地图）在 `frontend/index.html` 的 script 标签里
+- 浏览器端 AK（JSAPI GL 交互地图）：复制 `frontend/.env.example` 为 `frontend/.env.local`，填写 `VITE_BAIDU_JSAPI_AK`。本地配置及构建产物不上传 GitHub；修改后需重新构建。
 
 ## 验证
 ```bash
@@ -72,3 +72,7 @@ cd backend
 ./.venv/bin/python smoke_test.py           # 真实模型端到端冒烟（需先启动服务）
 ./.venv/bin/python e2e_frontend.py         # 前端完整闭环 E2E（需先启动服务）
 ```
+
+## 朋友协作
+
+首次接手请阅读 [协作/接手说明.md](协作/接手说明.md)。新仓库保存最新源码和文档快照，不包含旧 Git 历史、密钥、本机数据库、依赖目录或构建产物。

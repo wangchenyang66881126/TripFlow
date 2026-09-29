@@ -15,7 +15,7 @@ interface MapApi {
   Point: new (lng: number, lat: number) => MapPoint;
   Polyline: new (points: MapPoint[], options: Record<string, unknown>) => unknown;
   Marker: new (point: MapPoint) => unknown;
-  Label: new (text: string, options: Record<string, unknown>) => unknown;
+  Label: new (text: string, options: Record<string, unknown>) => { setStyle?: (style: Record<string, string>) => void };
   Size: new (width: number, height: number) => unknown;
 }
 const getApi = () => (window as unknown as { BMapGL?: MapApi }).BMapGL;
@@ -60,9 +60,10 @@ export default function MapView({ points, mapUrl, focusPoint }: Props) {
       map.centerAndZoom(path[0], 14);
       map.addOverlay(new api.Polyline(path, { strokeColor: "#28BDF0", strokeWeight: 4, strokeOpacity: 0.8 }));
       pts.forEach((p, i) => {
-        map.addOverlay(new api.Marker(path[i]));
         const safeName = p.name.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
-        map.addOverlay(new api.Label(`${i + 1}. ${safeName}`, { position: path[i], offset: new api.Size(12, -34) }));
+        const label = new api.Label(`<span title="${i + 1}. ${safeName}" style="display:grid;place-items:center;width:28px;height:28px;border:3px solid white;border-radius:50%;background:#24b7e5;color:white;font:600 12px/1 system-ui;box-shadow:0 2px 8px #23475b35;box-sizing:border-box">${i + 1}</span>`, { position: path[i], offset: new api.Size(-14, -14) });
+        label.setStyle?.({ border: "none", backgroundColor: "transparent", padding: "0" });
+        map.addOverlay(label);
       });
       map.setViewport(path);
     } catch { setFailed(true); }

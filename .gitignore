@@ -9,3 +9,6 @@ node_modules/
 data/
 .vefaas/
 .DS_Store
+
+# 前端构建可能包含本地浏览器地图配置，不上传构建产物。
+**/frontend/dist/
