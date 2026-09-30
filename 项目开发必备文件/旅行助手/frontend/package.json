@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@baidumap/jsapi-loader": "^1.0.0",
     "lucide-react": "^1.48.0",
     "qrcode": "^1.5.4",
     "react": "^19.3.0",

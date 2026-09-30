@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "./lib/api";
-import type { AppNavResponse, NavLeg, NavLink, Place, RouteResponse } from "./lib/types";
+import type { AppNavResponse, HotelsResponse, NavLeg, NavLink, Place, PlacePhoto, RouteResponse } from "./lib/types";
 import JourneyWorkspace from "./components/JourneyWorkspace";
 import RouteView from "./components/RouteView";
 import ScanModal from "./components/ScanModal";
@@ -22,6 +22,9 @@ export default function App() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [route, setRoute] = useState<RouteResponse | null>(null);
   const [nav, setNav] = useState<AppNavResponse | null>(null);
+  const [hotels, setHotels] = useState<HotelsResponse | null>(null);
+  const [hotelsError, setHotelsError] = useState("");
+  const [photos, setPhotos] = useState<Record<string, PlacePhoto>>({});
   const [scanLeg, setScanLeg] = useState<NavLeg | null>(null);
   const [navHint, setNavHint] = useState("");
   const [exporting, setExporting] = useState(false);
@@ -51,6 +54,23 @@ export default function App() {
     [stopTimer, stopExportTimer],
   );
 
+  // 实景图只是锦上添花：失败时不提示，卡片照常显示
+  const loadPhotos = useCallback((trip: string) => {
+    api
+      .getPhotos(trip)
+      .then((r) => setPhotos(r.photos))
+      .catch(() => {});
+  }, []);
+
+  const loadHotels = useCallback((trip: string) => {
+    setHotels(null);
+    setHotelsError("");
+    api
+      .getHotels(trip)
+      .then(setHotels)
+      .catch((e) => setHotelsError(e instanceof Error ? e.message : "推荐住宿加载失败"));
+  }, []);
+
   // 恢复入口：?trip=xxx 或 /share/xxx
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -68,10 +88,12 @@ export default function App() {
         setTitle(data.title ?? "");
         setPlaces(data.places);
         setPhase("confirm");
+        loadPhotos(trip);
         try {
           const r = await api.getRoute(trip);
           setRoute(r);
           setPhase("route");
+          loadHotels(trip);
           try {
             setNav(await api.getAppNav(trip));
           } catch {
@@ -85,7 +107,7 @@ export default function App() {
         setPhase("idle");
       }
     })();
-  }, []);
+  }, [loadHotels, loadPhotos]);
 
   const pollTask = useCallback(
     (taskId: string, onDone: () => void, failPhase: Phase) => {
@@ -119,6 +141,7 @@ export default function App() {
     setProgress("提交中…");
     setPhase("loading");
     setPlaces([]);
+    setPhotos({});
     setRoute(null);
     try {
       const { trip_id, task_id } = await api.createTrip(value);
@@ -132,6 +155,7 @@ export default function App() {
           setTitle(data.title ?? "");
           setPlaces(data.places);
           setPhase("confirm");
+          loadPhotos(trip_id);
         },
         "idle",
       );
@@ -155,6 +179,7 @@ export default function App() {
           setRoute(r);
           setPhase("route");
           setNav(null);
+          loadHotels(tripId);
           api
             .getAppNav(tripId)
             .then(setNav)
@@ -260,6 +285,7 @@ export default function App() {
       await api.updatePlace(tripId, id, body);
       const data = await api.getPlaces(tripId);
       setPlaces(data.places);
+      loadPhotos(tripId); // 改名 / 换 POI 后重新匹配图片（未变的地点走缓存）
     } catch (e) {
       setError(e instanceof Error ? e.message : "更新失败");
     }
@@ -269,9 +295,9 @@ export default function App() {
     <>
       <JourneyWorkspace
         phase={phase} link={link} onLinkChange={setLink} tripId={tripId}
-        title={title} city={city} places={places} progress={progress} error={error}
+        title={title} city={city} places={places} photos={photos} progress={progress} error={error}
         onGenerate={() => handleGenerate()}
-        onDemo={() => { setLink(DEMO_LINK); handleGenerate(DEMO_LINK); }}
+        onDemo={() => { setLink(DEMO_LINK); document.getElementById("source-link")?.focus(); }}
         onUpdate={updatePlace} onConfirm={handleGenerateRoute} onShare={handleShare}
       >
         {phase === "route" && route && (
@@ -280,7 +306,7 @@ export default function App() {
               <button onClick={() => setPhase("confirm")} className="quiet-button">调整地点</button>
             </div>
             <RouteView route={route} nav={nav} onAppNav={handleAppNav}
-              onSegmentNav={handleSegmentNav} onShare={handleShare} onExport={handleExport}
+              onSegmentNav={handleSegmentNav} hotels={hotels} hotelsError={hotelsError} onShare={handleShare} onExport={handleExport}
               exporting={exporting} exportProgress={exportProgress} />
           </section>
         )}

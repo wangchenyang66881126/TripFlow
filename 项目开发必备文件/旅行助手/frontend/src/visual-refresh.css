@@ -1,0 +1,130 @@
+/* Visual reference: 1-2026-Codex-旅行规划, September 29 evening. */
+.site-shell{background:radial-gradient(ellipse 65% 370px at 35% 0%,#cceefd 0%,#e7f6fd 57%,transparent 100%),radial-gradient(ellipse 50% 300px at 100% 0%,#e8f0ff,transparent 90%),#fff;min-height:100vh}
+.site-header{height:88px;max-width:1440px;margin:auto;padding:0 55px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:68px}
+.brand{display:flex;align-items:center;gap:10px;justify-self:start;white-space:nowrap}
+.brand-icon{height:39px;width:39px;background:#27b8e6;color:white;border-radius:13px 13px 13px 4px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px #24afce16;transform:rotate(-7deg)}
+.brand-icon svg{transform:rotate(7deg)}
+.brand strong{font-size:23px;letter-spacing:1px;display:flex;align-items:baseline;gap:8px}
+.brand strong span{font-size:10px;font-weight:600;letter-spacing:2px;color:#7d9eaf}
+.main-nav{display:flex;gap:34px;height:100%;align-items:center;justify-self:center}
+.main-nav a{font-size:13px;color:#728b99;height:100%;position:relative}
+.main-nav a.active{color:#21303b;font-weight:600}
+.main-nav a.active span{position:absolute;width:5px;height:5px;background:#21b8e8;border-radius:50%;bottom:19px;left:calc(50% - 2px)}
+.header-right{justify-self:end;display:flex;align-items:center;gap:21px}
+.help-button{display:flex;align-items:center;gap:6px;color:#6b8796;font-size:12px}
+.header-divider{width:1px;height:17px;background:#b6d2e277}
+.profile-button{height:35px;width:35px;background:#fff9;border:2px solid white;color:#8ba8b6;border-radius:50%;font-size:13px;box-shadow:0 4px 12px #8fb4c720}
+.home{max-width:1170px;margin:auto;padding:0 32px}
+.hero{text-align:center;padding-top:51px}
+.hero-stamp{display:flex;justify-content:center;align-items:center;gap:10px;font-size:9px;letter-spacing:2.3px;color:#79a5b7;font-weight:550}
+.hero h1{font-size:clamp(33px,3.4vw,48px);line-height:1.5;font-weight:700;letter-spacing:-1.5px;margin-top:15px}
+.hero h1 .underlined{position:relative;color:#229dc6;display:inline-block}
+.underlined svg{position:absolute;bottom:-5px;left:0;width:100%;height:12px;fill:none;stroke:#71d2ed;stroke-width:3;stroke-linecap:round}
+.hero>p{font-size:13px;color:#8297a3;letter-spacing:.5px;margin-top:14px}
+.composer-wrap{max-width:760px;margin:32px auto 0}
+.composer{background:white;text-align:left;border-radius:26px;padding:19px 24px 0;box-shadow:0 20px 50px #63899c0e,0 2px 10px #91bed005;border:1px solid #fff;position:relative}
+.composer-tabs{display:flex;align-items:center;gap:3px}
+.composer-tabs button{border-radius:20px;display:flex;align-items:center;gap:7px;padding:9px 15px;font-size:12px;color:#85929b}
+.composer-tabs button.selected{color:white;background:#262b2e;box-shadow:0 3px 7px #14232d22}
+.mini-tag{margin-left:auto;font-size:10px;color:#b4bfc6}
+.composer-input{position:relative;margin-top:15px;display:flex;align-items:center;gap:20px}
+.composer-input textarea{width:100%;border:0;background:none;resize:none;min-height:65px;line-height:1.9;padding:5px 0;color:#3a4d55;font-size:14px}
+.composer-input textarea:focus{box-shadow:none}
+.composer-input textarea::placeholder{color:#a8b2bb}
+.composer-send{width:41px;height:41px;border-radius:50%;background:#26b6df;color:white;flex-shrink:0;margin:0 0 8px 0}
+.composer-send:disabled{background:#eaf0f3;color:#abb7be;opacity:1}
+.composer-send:hover:not(:disabled){background:#149cc9}
+.composer-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f0f3f5;padding:17px 0 18px;margin-top:8px}
+.composer-foot>div{display:flex;align-items:center;gap:12px}
+.city-picker{display:flex;align-items:center;gap:5px;color:#6e8794}
+.city-picker select{font-size:12px;border:0;background:none;color:#556e7a;width:65px;cursor:pointer}
+.composer-foot .text-button{font-size:11px}
+.try-demo{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:17px;color:#98a9b4;font-size:11px}
+.try-demo button{display:flex;align-items:center;gap:7px;color:#7298a8}
+.try-demo button:hover{color:#24a7d0}
+.value-strip{display:flex;align-items:center;justify-content:center;gap:40px;margin-top:28px;color:#99a9b3;font-size:10px}
+.value-strip span{display:flex;align-items:center;gap:6px}
+.value-strip svg{color:#7fb6c7}
+.collection-section{margin-top:57px}
+.section-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:23px;gap:15px}
+.section-heading h2{font-size:22px;letter-spacing:-.3px;font-weight:650;margin-top:8px;display:flex;align-items:baseline;gap:17px}
+.section-heading h2>span{font-weight:400;font-size:11px;color:#9ba8b1;letter-spacing:0}
+.section-heading>.text-button{margin-bottom:3px;font-size:11px}
+.destination-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:23px}
+.destination-card{position:relative;border-radius:19px;overflow:hidden;background:#eaf6fd;border:1px solid #eff5f8;transition:transform .3s,box-shadow .3s}
+.destination-card:hover{transform:translateY(-5px);box-shadow:0 15px 35px #6e8d9d20}
+.destination-card.green{background:#f0f6eb;border-color:#eef4e9}
+.destination-card.peach{background:#fcf4ed;border-color:#f5f0e8}
+.destination-image{display:block;width:100%;height:189px;position:relative;overflow:hidden}
+.destination-image:disabled{opacity:1}
+.destination-image img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.destination-card:hover img{transform:scale(1.04)}
+.destination-image:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#12354624,transparent 60%)}
+.destination-chip{position:absolute;z-index:1;top:14px;left:14px;background:#ffffffea;border-radius:20px;padding:5px 10px;display:flex;align-items:center;gap:4px;color:#436372;font-size:10px}
+.destination-number{position:absolute;right:15px;bottom:11px;color:#fff8;z-index:1;font-family:Georgia,serif;font-size:28px}
+.destination-body{padding:20px 21px 16px}
+.card-tag{font-size:9px;letter-spacing:.5px;color:#80a7b5;display:block;margin-bottom:7px}
+.green .card-tag{color:#9ba885}
+.peach .card-tag{color:#b5a08c}
+.card-title{font-size:18px;font-weight:650;text-align:left;display:block;line-height:1.5;letter-spacing:-.25px}
+.destination-body>p{font-size:11px;color:#94a6ae;margin-top:7px}
+.destination-body footer{display:flex;align-items:center;justify-content:space-between;margin-top:17px;padding-top:13px;border-top:1px solid #bdd6e238}
+.destination-body footer>span:first-child{display:flex;align-items:center;gap:5px;color:#87a0ad;font-size:10px}
+.destination-body footer i{width:2px;height:2px;background:#a4bac3;border-radius:50%;margin:0 4px}
+.card-arrow{display:flex;align-items:center;justify-content:center;background:#ffffffa6;border-radius:50%;height:27px;width:27px;color:#6e8a97}
+.site-footer{padding:30px 0 25px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#b0bdc4;font-size:9px}
+.site-footer>span{display:flex;align-items:center;gap:9px;letter-spacing:.2px}
+.site-footer>span:last-child{letter-spacing:1.6px;font-size:8px}
+.site-footer i{width:1px;height:9px;background:#dfe7eb}
+.home-error{padding:14px;background:#fff5ef;color:#b67154;margin:20px auto 0;border-radius:12px;max-width:760px;font-size:12px;display:flex;justify-content:space-between;align-items:center;text-align:left}
+
+/* The current service accepts攻略 links; expose only its supported actions. */
+.site-shell { font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; color:#202c32; }
+.site-shell h1,.site-shell h2,.site-shell h3 { margin-bottom:0; }
+.site-shell .brand { text-decoration:none; }
+.site-shell .live-dot,.visual-workspace .live-dot { width:5px;height:5px;border-radius:50%;background:#37b7cb;box-shadow:0 0 0 3px #36b9d211;display:inline-block; }
+.site-shell .header-divider { margin:0; }
+.site-shell .text-button { display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:#697b84; }
+.site-shell .profile-button { display:grid;place-items:center; }
+.site-shell .composer-mode { border-radius:20px;display:flex;align-items:center;gap:7px;padding:9px 15px;font-size:12px;color:white;background:#262b2e;box-shadow:0 3px 7px #14232d22; }
+.site-shell .composer-send { display:grid;place-items:center; }
+.site-shell .composer-foot>span { display:flex;align-items:center;gap:6px;font-size:11px;color:#849ca9; }
+.site-shell .destination-body footer>button { display:flex;align-items:center;justify-content:space-between;width:100%;font-size:10px;color:#6f8d9c;text-align:left; }
+.site-shell .destination-card.green footer>button { color:#7f9370; }
+.site-shell .destination-card.peach footer>button { color:#a28d7a; }
+.travel-guide { margin-top:40px; }
+.guide-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:24px;border:1px dashed #dce8ee;border-radius:16px;padding:25px;background:#fbfdfe; }
+.guide-step { display:flex;align-items:flex-start;gap:14px; }
+.guide-step .step-icon { flex-shrink:0;width:43px;height:46px;color:#73adc4;background:#eaf6fc;border-radius:13px;display:grid;place-items:center; }
+.guide-step:nth-child(2) .step-icon { background:#eff6eb;color:#92a780; }
+.guide-step:nth-child(3) .step-icon { background:#f4effa;color:#a495b8; }
+.guide-step small { color:#91aab5;font-size:9px;letter-spacing:1px; }
+.guide-step h3 { font-size:13px;font-weight:600;margin:4px 0 8px; }
+.guide-step p { font-size:10px;color:#92a5af;line-height:1.9; }
+@media(max-width:1100px) { .site-shell .site-header{padding:0 40px;gap:45px}.site-shell .section-heading h2>span{display:none}.site-shell .destination-image{height:175px}.site-shell .card-title{font-size:16px}.site-shell .destination-body{padding:18px} }
+@media(max-width:950px) { .site-shell .destination-grid{gap:16px}.site-shell .destination-image{height:150px}.site-shell .value-strip{gap:24px}.site-shell .main-nav{gap:23px}.site-shell .site-header{gap:35px}.site-shell .brand strong span{display:none}.site-shell .hero h1{font-size:38px}.site-shell .site-footer>span:last-child{display:none}.guide-grid{gap:18px;padding:20px}.guide-step{gap:10px} }
+@media(max-width:720px) {
+.site-shell .site-header{height:74px;padding:0 22px;gap:24px}.site-shell .brand{gap:8px}.site-shell .brand-icon{height:31px;width:31px;border-radius:10px 10px 10px 3px}.site-shell .brand-icon svg{width:21px}.site-shell .brand strong{font-size:20px}.site-shell .main-nav{gap:19px}.site-shell .main-nav a{font-size:11px}.site-shell .main-nav a.active span{bottom:14px}.site-shell .header-right{gap:0}.site-shell .header-divider,.site-shell .help-button span,.site-shell .profile-button{display:none}.site-shell .home{padding:0 24px}.site-shell .hero{padding-top:32px}.site-shell .hero-stamp{font-size:7px;letter-spacing:1.5px;gap:7px}.site-shell .hero h1{font-size:34px;letter-spacing:-1px;margin-top:15px;white-space:nowrap}.site-shell .hero>p{font-size:10px;line-height:1.9;max-width:300px;margin:12px auto 0}.site-shell .composer-wrap{margin-top:25px}.site-shell .composer{padding:15px 17px 0;border-radius:22px}.site-shell .composer-mode{font-size:10px;padding:8px 12px}.site-shell .mini-tag{font-size:8px}.site-shell .composer-input{margin-top:14px;gap:10px}.site-shell .composer-input textarea{font-size:12px;min-height:88px;line-height:1.9;padding:6px 0}.site-shell .composer-send{width:36px;height:36px}.site-shell .composer-send svg{width:19px}.site-shell .composer-foot{padding:13px 0;gap:5px}.site-shell .composer-foot>span{font-size:9px;gap:4px}.site-shell .composer-foot svg{width:12px}.site-shell .try-demo{font-size:9px;gap:6px;margin-top:14px;min-height:32px}.site-shell .value-strip{margin-top:22px;gap:16px;flex-wrap:wrap;font-size:8px}.site-shell .value-strip span:last-child{display:none}.site-shell .value-strip svg{width:12px}.site-shell .collection-section{margin-top:40px}.site-shell .section-heading{margin-bottom:17px}.site-shell .section-heading h2{font-size:21px;margin-top:8px}.site-shell .section-heading>.text-button{font-size:9px;gap:3px}.site-shell .eyebrow{font-size:7px;letter-spacing:1.8px}.site-shell .destination-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:15px;margin:0 -24px;padding:0 24px 12px;scrollbar-width:thin}.site-shell .destination-card{width:280px;flex-shrink:0;scroll-snap-align:center;border-radius:17px}.site-shell .destination-image{height:175px}.site-shell .destination-body{padding:18px}.site-shell .card-title{font-size:17px}.site-shell .site-footer{font-size:8px;justify-content:center;margin-top:10px}.travel-guide{margin-top:25px}.guide-grid{grid-template-columns:1fr;gap:22px}.guide-step p{font-size:11px}.guide-step small{display:none}.guide-step h3{margin-top:2px}.site-shell .destination-body footer>button{min-height:35px}
+}
+@media(max-width:380px) { .site-shell .site-header{padding:0 17px;gap:20px}.site-shell .main-nav{gap:15px}.site-shell .main-nav a{font-size:10px}.site-shell .home{padding:0 20px}.site-shell .hero h1{font-size:30px}.site-shell .hero-stamp{font-size:6px}.site-shell .destination-grid{margin:0 -20px;padding:0 20px 12px} }
+.site-shell .main-nav a { display:flex;align-items:center; }
+
+/* Keep navigation centered on narrow screens without overlapping the brand. */
+@media(max-width:600px) {
+  .site-shell .site-header { height:108px;grid-template-columns:1fr auto;grid-template-rows:64px 44px;column-gap:24px;row-gap:0; }
+  .site-shell .header-right { grid-column:2;grid-row:1; }
+  .site-shell .main-nav { grid-column:1 / -1;grid-row:2; }
+  .site-shell .main-nav a.active span { bottom:6px; }
+}
+
+/* The whole composer responds to hover and focus, without a textarea ring. */
+.site-shell .composer { transition:box-shadow 180ms ease; }
+.site-shell .composer:hover,
+.site-shell .composer:focus-within {
+  box-shadow:0 22px 38px -14px rgb(63 96 113 / 18%), 0 8px 16px -10px rgb(63 96 113 / 10%);
+}
+.site-shell .composer-input textarea:focus,
+.site-shell .composer-input textarea:focus-visible {
+  outline:none;
+  box-shadow:none;
+}

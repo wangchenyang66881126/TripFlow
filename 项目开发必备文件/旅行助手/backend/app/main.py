@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import share, tasks, trips
+from .api import baidu_map, share, tasks, trips
 from .core.config import FRONTEND_DIST, ensure_dirs
 from .core.db import Base, engine
 from .core.errors import AppError, error_body
@@ -27,6 +27,7 @@ app = FastAPI(title="TripFlow 旅行全流程助手", version="0.1.0")
 app.include_router(trips.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1")
 app.include_router(share.router, prefix="/api/v1")
+app.include_router(baidu_map.router, prefix="/api/v1")
 
 
 @app.exception_handler(AppError)

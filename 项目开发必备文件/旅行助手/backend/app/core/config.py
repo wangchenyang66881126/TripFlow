@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]  # backend/
 PROJECT_ROOT = BACKEND_DIR.parent
@@ -21,6 +21,9 @@ FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 class Settings:
     def __init__(self) -> None:
         self.baidu_map_ak: str = os.getenv("BAIDU_MAP_AK", "").strip()
+        # 浏览器端 AK 仅由地图资源代理使用；兼容本机已有配置，不混用服务端 AK。
+        local_frontend = dotenv_values(PROJECT_ROOT / "frontend" / ".env.local")
+        self.baidu_jsapi_ak: str = (os.getenv("BAIDU_JSAPI_AK") or local_frontend.get("VITE_BAIDU_JSAPI_AK") or "").strip()
         self.deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "").strip()
         self.deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat").strip()
         self.deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip()

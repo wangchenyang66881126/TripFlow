@@ -18,7 +18,7 @@ MARKER_URI = "baidumap://map/marker"
 # - 官方 Web 端 URI api.map.baidu.com/direction 稳定，但只含起终点，作兜底。
 WEB_ROUTE_URI = "https://map.baidu.com/dir"
 WEB_DIRECTION_URI = "https://api.map.baidu.com/direction"
-WEB_MARKER_URI = "https://api.map.baidu.com/marker"
+# 网页版 @ 中心使用 BD09MC 投影坐标；不能直接填写 BD09 经纬度。
 
 # bd09ll → bd09mc（百度墨卡托）分段多项式系数，取自百度 JSAPI
 _LLBAND = (75, 60, 45, 30, 15, 0)
@@ -144,15 +144,20 @@ def build_web_direction_uri(a, b, city: str | None, src: str, mode: str = "drivi
 
 
 def build_web_marker_uri(p, src: str) -> str:
-    q = [
-        f"location={p.lat:.6f},{p.lng:.6f}",
-        f"title={quote(p.name, safe='')}",
-        f"content={quote(getattr(p, 'poi_address', None) or p.name, safe='')}",
-        "coord_type=bd09ll",
-        "output=html",
-        f"src={quote(src, safe='.')}",
-    ]
-    return f"{WEB_MARKER_URI}?{'&'.join(q)}"
+    """已有 UID 直接打开 POI；无 UID 时按名称/地址在坐标附近检索，无需 AK。"""
+    x, y = ll2mc(p.lng, p.lat)
+    center = f"@{x:.2f},{y:.2f},16z"
+    uid = getattr(p, "poi_uid", None)
+    if uid:
+        uid = quote(uid, safe="")
+        name = quote(_web_name(p), safe="")
+        return (
+            f"https://map.baidu.com/poi/{name}/{center}"
+            f"?uid={uid}&en_uid={uid}&compat=1&querytype=detailConInfo&da_src=shareurl"
+        )
+    # 裸 /@ 中心可能被网页版忽略；搜索页保留地点名称与地址供用户核对。
+    query = quote(f"{getattr(p, 'poi_address', None) or ''} {p.name}".strip(), safe="")
+    return f"https://map.baidu.com/search/{query}/{center}?querytype=s&wd={query}&da_src=shareurl"
 
 
 def _dedupe(points) -> list:

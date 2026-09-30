@@ -137,9 +137,21 @@ def test_web_basic_uri_origin_destination_only():
 
 
 def test_web_uri_single_point_marker():
-    web = build_day_legs([_place(0)], "重庆", 15, SRC)[0]["web_uri"]
-    assert web.startswith("https://api.map.baidu.com/marker?")
-    assert _query(web)["output"] == ["html"]
+    web = build_day_legs([_place(0, lat=29.563326, lng=106.583439)], "重庆", 15, SRC)[0]["web_uri"]
+    # 百度网页版已核对的解放碑投影坐标，防止再次误用经纬度。
+    assert urlsplit(web).path.endswith("/@11864943.26,3426267.49,16z")
+    assert _query(web)["uid"] == ["uid0"]
+    assert _query(web)["querytype"] == ["detailConInfo"]
+
+
+def test_web_marker_without_uid_searches_name_and_address_near_coordinates():
+    p = _place(0, uid=False, lat=29.563326, lng=106.583439)
+    p.name = "解放碑"
+    p.poi_address = "重庆市渝中区"
+    web = build_day_legs([p], "重庆", 15, SRC)[0]["web_uri"]
+    assert urlsplit(web).path.endswith("/@11864943.26,3426267.49,16z")
+    assert _query(web)["wd"] == ["重庆市渝中区 解放碑"]
+    assert "uid" not in _query(web)
 
 
 def test_segments_pairwise_all_modes():

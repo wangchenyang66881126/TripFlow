@@ -1,16 +1,18 @@
 import { useState, type ChangeEvent } from "react";
 import { MapPin } from "lucide-react";
-import type { Place } from "../lib/types";
+import type { Place, PlacePhoto } from "../lib/types";
 
 interface Props {
   place: Place;
+  photo?: PlacePhoto;
   selected?: boolean;
   onSelect?: () => void;
   onUpdate: (id: number, body: Record<string, unknown>) => void;
 }
 
-export default function PlaceCard({ place, onUpdate, selected, onSelect }: Props) {
+export default function PlaceCard({ place, photo, onUpdate, selected, onSelect }: Props) {
   const [name, setName] = useState(place.name);
+  const [failedSrc, setFailedSrc] = useState("");
 
   const saveName = () => {
     const v = name.trim();
@@ -33,11 +35,22 @@ export default function PlaceCard({ place, onUpdate, selected, onSelect }: Props
     <div className={`place-card ${selected ? "selected" : ""} ${place.skipped ? "is-skipped" : ""}`}><button className="place-locate" onClick={onSelect} aria-label={`在地图定位${place.name}`}><MapPin size={12} /> {place.type || "景点"}<span>查看位置 ↗</span></button>
       <div className="flex items-start gap-3">
         <span
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+          className="place-index flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
           style={{ background: "#E5F6FF", color: "#20BDF1" }}
         >
           {place.seq}
         </span>
+        {photo && failedSrc !== photo.src && (
+          <a
+            className="place-thumb"
+            href={photo.source_url || photo.src}
+            target="_blank"
+            rel="noreferrer"
+            title={`图片来源：百度百科 · ${photo.title || place.name}`}
+          >
+            <img src={photo.src} alt={`${place.name}实景`} loading="lazy" onError={() => setFailedSrc(photo.src)} />
+          </a>
+        )}
         <div className="min-w-0 flex-1">
           <input
             aria-label="地点名称"
@@ -80,7 +93,7 @@ export default function PlaceCard({ place, onUpdate, selected, onSelect }: Props
         </label>
 
         <label className="flex min-w-0 flex-1 items-center gap-1.5">
-          <span className="shrink-0 text-xs text-[#717171]">换POI</span>
+          <span className="shrink-0 text-xs text-[#717171]">地图地点</span>
           <select
             value=""
             onChange={handlePoi}
