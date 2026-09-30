@@ -20,6 +20,7 @@ FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 
 class Settings:
     def __init__(self) -> None:
+        self.preset_demo: bool = os.getenv("PRESET_DEMO", "true").strip().lower() != "false"
         self.baidu_map_ak: str = os.getenv("BAIDU_MAP_AK", "").strip()
         # 浏览器端 AK 仅由地图资源代理使用；兼容本机已有配置，不混用服务端 AK。
         local_frontend = dotenv_values(PROJECT_ROOT / "frontend" / ".env.local")
@@ -27,6 +28,9 @@ class Settings:
         self.deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "").strip()
         self.deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat").strip()
         self.deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip()
+        self.planner_timeout: float = float(os.getenv("PLANNER_TIMEOUT", "60"))
+        self.planner_attempts: int = min(3, max(1, int(os.getenv("PLANNER_ATTEMPTS", "2"))))
+        self.planner_max_tokens: int = int(os.getenv("PLANNER_MAX_TOKENS", "4096"))
         self.database_url: str = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR / 'tripflow.db'}")
         self.allow_origins: str = os.getenv("ALLOW_ORIGINS", "*")
         # 唤起百度地图 App：每段最多途经点数（超出拆段）、调用来源 src

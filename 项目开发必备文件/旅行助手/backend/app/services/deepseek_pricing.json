@@ -1,0 +1,14 @@
+{
+  "version": "2026-09-30-peak-ceiling-v1",
+  "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+  "currency": "CNY",
+  "policy": "使用高峰输入未命中缓存价格和高峰输出价格作为保守上限，不当作服务商账单。旧别名沿用原调用配置，按已公布最高文本模型费率保护。",
+  "models": {
+    "deepseek-flash": {"input_per_million": "2", "output_per_million": "8"},
+    "deepseek-v4-flash": {"input_per_million": "2", "output_per_million": "8"},
+    "deepseek-v4-flash-vision-exp": {"input_per_million": "2", "output_per_million": "8"},
+    "deepseek-v4-pro": {"input_per_million": "9", "output_per_million": "27"},
+    "deepseek-chat": {"input_per_million": "9", "output_per_million": "27"},
+    "deepseek-reasoner": {"input_per_million": "9", "output_per_million": "27"}
+  }
+}

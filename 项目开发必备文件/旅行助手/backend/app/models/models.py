@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, BigInteger, Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..core.db import Base
@@ -66,3 +66,39 @@ class Task(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     trip: Mapped["Trip"] = relationship(back_populates="tasks")
+
+
+class AIBudgetDay(Base):
+    """全站共用账本；金额单位为十亿分之一元，避免浮点误差。"""
+    __tablename__ = "ai_budget_days"
+    __table_args__ = (
+        CheckConstraint("spent_nano >= 0 AND reserved_nano >= 0"),
+        CheckConstraint("spent_nano + reserved_nano <= limit_nano"),
+    )
+    day: Mapped[str] = mapped_column(String(10), primary_key=True)  # Asia/Shanghai
+    limit_nano: Mapped[int] = mapped_column(BigInteger)
+    spent_nano: Mapped[int] = mapped_column(BigInteger, default=0)
+    reserved_nano: Mapped[int] = mapped_column(BigInteger, default=0)
+    blocked: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class AIUsage(Base):
+    """每次 HTTP 尝试单独预留，重试不能绕开账本。没有原文和密钥。"""
+    __tablename__ = "ai_usage"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    day: Mapped[str] = mapped_column(String(10), ForeignKey("ai_budget_days.day"), index=True)
+    model: Mapped[str] = mapped_column(String(64))
+    purpose: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(24), default="reserved")
+    reserved_nano: Mapped[int] = mapped_column(BigInteger)
+    charged_nano: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    input_bound: Mapped[int] = mapped_column(Integer)
+    output_bound: Mapped[int] = mapped_column(Integer)
+    input_rate_nano: Mapped[int] = mapped_column(Integer)
+    output_rate_nano: Mapped[int] = mapped_column(Integer)
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    pricing_version: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    settled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

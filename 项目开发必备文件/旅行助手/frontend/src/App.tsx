@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "./lib/api";
-import type { AppNavResponse, HotelsResponse, NavLeg, NavLink, Place, PlacePhoto, RouteResponse } from "./lib/types";
+import { PRESET_DEMO, PRESET_TEXT } from "./lib/preset";
+import { fallbackIfAppStaysClosed, isMobileDevice } from "./lib/navigation";
+import type { AppNavResponse, HotelsResponse, InputMode, NavLeg, NavLink, Place, PlacePhoto, RouteResponse } from "./lib/types";
 import JourneyWorkspace from "./components/JourneyWorkspace";
 import RouteView from "./components/RouteView";
 import ScanModal from "./components/ScanModal";
@@ -12,7 +14,11 @@ const DEMO_LINK = "https://xhslink.cn/o/10vTPLjLXy7";
 type Phase = "idle" | "loading" | "confirm" | "routing" | "route";
 
 export default function App() {
-  const [link, setLink] = useState("");
+  const [link, setLink] = useState(PRESET_DEMO ? PRESET_TEXT : "");
+  const [presetTrip, setPresetTrip] = useState(false);
+  const [mode, setMode] = useState<InputMode>("guide");
+  const [summary, setSummary] = useState("");
+  const submittingRef = useRef(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
@@ -26,11 +32,11 @@ export default function App() {
   const [hotelsError, setHotelsError] = useState("");
   const [photos, setPhotos] = useState<Record<string, PlacePhoto>>({});
   const [scanLeg, setScanLeg] = useState<NavLeg | null>(null);
-  const [navHint, setNavHint] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState("");
   const timerRef = useRef<number | null>(null);
   const exportTimerRef = useRef<number | null>(null);
+  const cancelNavFallback = useRef<(() => void) | null>(null);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -50,6 +56,7 @@ export default function App() {
     () => () => {
       stopTimer();
       stopExportTimer();
+      cancelNavFallback.current?.();
     },
     [stopTimer, stopExportTimer],
   );
@@ -71,54 +78,19 @@ export default function App() {
       .catch((e) => setHotelsError(e instanceof Error ? e.message : "推荐住宿加载失败"));
   }, []);
 
-  // 恢复入口：?trip=xxx 或 /share/xxx
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    let trip = params.get("trip");
-    if (!trip) {
-      const m = window.location.pathname.match(/^\/share\/([A-Za-z0-9]+)/);
-      if (m) trip = m[1];
-    }
-    if (!trip) return;
-    (async () => {
-      try {
-        const data = await api.getPlaces(trip);
-        setTripId(trip);
-        setCity(data.city ?? "");
-        setTitle(data.title ?? "");
-        setPlaces(data.places);
-        setPhase("confirm");
-        loadPhotos(trip);
-        try {
-          const r = await api.getRoute(trip);
-          setRoute(r);
-          setPhase("route");
-          loadHotels(trip);
-          try {
-            setNav(await api.getAppNav(trip));
-          } catch {
-            /* ignore */
-          }
-        } catch {
-          /* 尚未生成动线 */
-        }
-      } catch {
-        setError("行程不存在或已失效");
-        setPhase("idle");
-      }
-    })();
-  }, [loadHotels, loadPhotos]);
-
   const pollTask = useCallback(
-    (taskId: string, onDone: () => void, failPhase: Phase) => {
+    (taskId: string, onDone: () => void | Promise<void>, failPhase: Phase) => {
       stopTimer();
+      let polling = false;
       timerRef.current = window.setInterval(async () => {
+        if (polling) return;
+        polling = true;
         try {
           const t = await api.getTask(taskId);
           setProgress(t.progress ?? "");
           if (t.status === "done") {
             stopTimer();
-            onDone();
+            await onDone();
           } else if (t.status === "failed") {
             stopTimer();
             setError(t.error ?? "生成失败");
@@ -128,23 +100,97 @@ export default function App() {
           stopTimer();
           setError(e instanceof Error ? e.message : "请求失败");
           setPhase(failPhase);
+        } finally {
+          polling = false;
         }
       }, 1200);
     },
     [stopTimer],
   );
 
+  // 刷新恢复服务端任务，不重复提交生成请求。
+  useEffect(() => {
+    const trip = new URLSearchParams(window.location.search).get("trip")
+      || window.location.pathname.match(/^\/share\/([A-Za-z0-9]+)/)?.[1];
+    if (!trip) return;
+    let cancelled = false;
+    const restore = async () => {
+      const data = await api.getPlaces(trip);
+      if (cancelled) return;
+      setTripId(trip);
+      setCity(data.city ?? "");
+      setTitle(data.title ?? "");
+      setSummary(data.summary ?? "");
+      setPresetTrip(!!data.preset);
+      setMode(data.input_mode ?? "guide");
+      setLink(PRESET_DEMO ? PRESET_TEXT : (data.input_text ?? ""));
+      setPlaces(data.places);
+      if (data.task_id && (data.task_status === "pending" || data.task_status === "running")) {
+        setPhase(data.status === "routing" ? "routing" : "loading");
+        pollTask(data.task_id, restore, "idle");
+        return;
+      }
+      if (data.task_status === "failed" && data.status !== "done") {
+        setError(data.task_error || "上次生成未完成，可以修改输入后重新提交。");
+        setPhase("idle");
+        return;
+      }
+      setPhase("confirm");
+      loadPhotos(trip);
+      if (data.status === "done") {
+        const result = await api.getRoute(trip);
+        if (cancelled) return;
+        setRoute(result);
+        setPhase("route");
+        loadHotels(trip);
+        api.getAppNav(trip).then(setNav).catch(() => {});
+      }
+    };
+    restore().catch((e) => {
+      if (!cancelled) {
+        setError(e instanceof Error ? e.message : "行程读取失败，请刷新重试。");
+        setPhase("idle");
+      }
+    });
+    return () => { cancelled = true; stopTimer(); };
+  }, [loadHotels, loadPhotos, pollTask, stopTimer]);
+
   const handleGenerate = async (src?: string) => {
     const value = (src ?? link).trim();
-    if (!value || phase === "loading" || phase === "routing") return;
+    if (!value || submittingRef.current || phase === "loading" || phase === "routing") return;
+    submittingRef.current = true;
     setError("");
     setProgress("提交中…");
     setPhase("loading");
     setPlaces([]);
+    setTitle("");
+    setCity("");
+    setSummary("");
+    setHotels(null);
     setPhotos({});
     setRoute(null);
+    setNav(null);
     try {
-      const { trip_id, task_id } = await api.createTrip(value);
+      if (PRESET_DEMO) {
+        setProgress("正在打开预设行程…");
+        const { trip_id } = await api.openPreset();
+        const [data, result] = await Promise.all([api.getPlaces(trip_id), api.getRoute(trip_id)]);
+        setTripId(trip_id);
+        setPresetTrip(true);
+        setCity(data.city ?? "");
+        setTitle(data.title ?? "");
+        setSummary(data.summary ?? "");
+        setPlaces(data.places);
+        setRoute(result);
+        setPhase("route");
+        window.history.replaceState(null, "", `?trip=${trip_id}`);
+        loadHotels(trip_id);
+        loadPhotos(trip_id);
+        api.getAppNav(trip_id).then(setNav).catch(() => {});
+        return;
+      }
+      setPresetTrip(false);
+      const { trip_id, task_id } = await api.createTrip(value, mode);
       setTripId(trip_id);
       window.history.replaceState(null, "", `?trip=${trip_id}`);
       pollTask(
@@ -153,6 +199,7 @@ export default function App() {
           const data = await api.getPlaces(trip_id);
           setCity(data.city ?? "");
           setTitle(data.title ?? "");
+          setSummary(data.summary ?? "");
           setPlaces(data.places);
           setPhase("confirm");
           loadPhotos(trip_id);
@@ -162,6 +209,8 @@ export default function App() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "请求失败");
       setPhase("idle");
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -193,47 +242,26 @@ export default function App() {
     }
   };
 
-  const isMobile = () => {
-    const ua = navigator.userAgent;
-    return (
-      /Android|iPhone|iPad|iPod/i.test(ua) ||
-      (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) // iPadOS 伪装成 Mac
-    );
-  };
-
-  const openInApp = (uri: string) => {
-    // 微信 / QQ 等内置浏览器可能拦截 baidumap://（部分版本会弹确认框放行），先尝试再提示
-    const inApp = /MicroMessenger|QQ\/|Weibo|DingTalk|AliApp/i.test(navigator.userAgent);
-    setNavHint("");
+  const openInApp = (uri: string, webUri: string) => {
+    cancelNavFallback.current?.();
+    cancelNavFallback.current = fallbackIfAppStaysClosed(() => {
+      window.location.assign(webUri);
+    });
     window.location.href = uri;
-    // 3 秒后页面仍在前台，多半是没唤起（未安装百度地图或浏览器拦截）
-    window.setTimeout(() => {
-      if (document.visibilityState === "visible") {
-        setNavHint(
-          inApp
-            ? "没有打开百度地图？当前在微信 / QQ 等 App 内置浏览器里，可能被拦截。请点右上角「…」，选择「在浏览器打开」后再点按钮。"
-            : "没有打开百度地图？请确认手机已安装百度地图 App；若仍无反应，换用系统自带浏览器（Safari / Chrome）打开本页再试。",
-        );
-      }
-    }, 3000);
   };
 
   // 驾车（含途经点）：电脑上没有 App，弹二维码 + 网页版
   const handleAppNav = (leg: NavLeg) => {
-    if (!isMobile()) {
+    if (!isMobileDevice()) {
       setScanLeg(leg);
       return;
     }
-    openInApp(leg.uri);
+    openInApp(leg.uri, leg.web_uri);
   };
 
-  // 公交 / 步行 / 骑行单段：电脑上直接开网页版
+  // 电脑使用原生 HTTPS 链接；手机尝试 App，未唤起则打开同一段网页路线。
   const handleSegmentNav = (link: NavLink) => {
-    if (!isMobile()) {
-      window.open(link.web_uri, "_blank", "noopener");
-      return;
-    }
-    openInApp(link.uri);
+    openInApp(link.uri, link.web_uri);
   };
 
   const handleShare = async () => {
@@ -294,18 +322,20 @@ export default function App() {
   return (
     <>
       <JourneyWorkspace
+        demoMode={PRESET_DEMO} presetTrip={presetTrip}
         phase={phase} link={link} onLinkChange={setLink} tripId={tripId}
+        mode={mode} onModeChange={setMode} summary={summary}
         title={title} city={city} places={places} photos={photos} progress={progress} error={error}
         onGenerate={() => handleGenerate()}
-        onDemo={() => { setLink(DEMO_LINK); document.getElementById("source-link")?.focus(); }}
+        onDemo={() => { setLink(PRESET_DEMO ? PRESET_TEXT : (mode === "idea" ? "重庆玩 2 天，想吃美食、看夜景，节奏轻松一点" : DEMO_LINK)); document.getElementById("source-link")?.focus(); }}
         onUpdate={updatePlace} onConfirm={handleGenerateRoute} onShare={handleShare}
       >
         {phase === "route" && route && (
           <section className="result-section">
             <div className="result-heading"><h2>动线结果</h2>
-              <button onClick={() => setPhase("confirm")} className="quiet-button">调整地点</button>
+              {presetTrip ? <span className="preset-label">预设演示 · 固定行程</span> : <button onClick={() => setPhase("confirm")} className="quiet-button">调整地点</button>}
             </div>
-            <RouteView route={route} nav={nav} onAppNav={handleAppNav}
+            <RouteView preset={presetTrip} route={route} nav={nav} onAppNav={handleAppNav}
               onSegmentNav={handleSegmentNav} hotels={hotels} hotelsError={hotelsError} onShare={handleShare} onExport={handleExport}
               exporting={exporting} exportProgress={exportProgress} />
           </section>
@@ -317,16 +347,6 @@ export default function App() {
           leg={scanLeg}
           onClose={() => setScanLeg(null)}
         />
-      )}
-      {navHint && (
-        <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
-          <div className="flex max-w-xl items-start gap-3 rounded-2xl bg-[#222] px-4 py-3 text-sm text-white shadow-xl">
-            <span>{navHint}</span>
-            <button onClick={() => setNavHint("")} className="shrink-0 text-white/70 hover:text-white">
-              知道了
-            </button>
-          </div>
-        </div>
       )}
     </>
   );

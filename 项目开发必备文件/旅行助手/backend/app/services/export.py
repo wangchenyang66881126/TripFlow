@@ -7,6 +7,7 @@ from ..core.config import ASSETS_DIR
 from ..core.errors import AppError
 from ..core.logging import get_logger
 from . import map as map_svc
+from .preset import is_preset
 
 log = get_logger(__name__)
 
@@ -32,6 +33,7 @@ def render_export_html(trip, days: list[dict], place_by_id: dict) -> str:
         )
 
     title = (trip.title or "旅行动线")[:60]
+    demo_note = '<div class="meta">预设演示 · 固定行程，耗时仅供参考</div>' if is_preset(getattr(trip, "id", "")) else ""
     return f"""<!doctype html>
 <html><head><meta charset="utf-8"><style>
 *{{margin:0;padding:0;box-sizing:border-box;}}
@@ -53,7 +55,7 @@ header .meta{{margin-top:12px;font-size:15px;opacity:.9;}}
 .seg{{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e5e6eb;}}
 .seg:last-child{{border-bottom:none;}}
 </style></head>
-<body><header><h1>{title}</h1><div class="meta">城市：{trip.city or "-"}　·　共 {sum(len(d["place_ids"]) for d in days)} 个地点</div></header>
+<body><header><h1>{title}</h1><div class="meta">城市：{trip.city or "-"}　·　共 {sum(len(d["place_ids"]) for d in days)} 个地点</div>{demo_note}</header>
 {''.join(sections)}
 </body></html>"""
 

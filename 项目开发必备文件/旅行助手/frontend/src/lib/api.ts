@@ -1,6 +1,7 @@
 import type {
   AppNavResponse,
   HotelsResponse,
+  InputMode,
   PhotosResponse,
   PlacesResponse,
   RouteResponse,
@@ -23,10 +24,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  createTrip: (source_link: string) =>
+  openPreset: () =>
+    request<{ trip_id: string; status: string; preset: boolean }>("/api/v1/trips/preset", { method: "POST" }),
+
+  createTrip: (source_link: string, mode: InputMode = "guide") =>
     request<{ trip_id: string; task_id: string }>("/api/v1/trips", {
       method: "POST",
-      body: JSON.stringify({ source_link }),
+      body: JSON.stringify({ source_link, mode }),
     }),
 
   getTask: (taskId: string) => request<Task>(`/api/v1/tasks/${taskId}`),

@@ -128,3 +128,23 @@
   outline:none;
   box-shadow:none;
 }
+
+/* 两种输入共用原有旅行卡片与聚焦阴影。 */
+.input-modes{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.input-modes button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 13px;border:0;border-radius:22px;background:transparent;color:#748995;font-size:12px;cursor:pointer}
+.input-modes button.selected{background:#262b2e;color:#fff;box-shadow:0 3px 7px #14232d22}
+.input-modes button:focus-visible{outline:2px solid #849ca9;outline-offset:3px}
+.input-modes button:disabled{cursor:wait;opacity:.65}
+.sidebar-bottom>.input-modes{margin-bottom:10px}
+.trip-summary{font-size:12px;line-height:1.9;color:#6d8796;background:#f3f9fc;border-radius:12px;padding:12px 15px;margin:0 0 20px}
+.place-note{font-size:12px;line-height:1.8;color:#6f8490;margin:12px 0 0}
+@media(max-width:600px){.site-shell .composer-tabs .mini-tag{display:none}.input-modes button{min-height:44px;font-size:11px;padding:9px 12px}.site-shell .composer-foot{flex-wrap:wrap;gap:8px}}
+
+/* 固定演示保留首页输入卡片的悬停 / 聚焦阴影。 */
+.preset-label { display: inline-flex; align-items: center; gap: 7px; color: #287c99; font-size: 12px; font-weight: 650; line-height: 1.5; }
+.composer textarea[readonly], .link-composer textarea[readonly] { cursor: text; }
+.composer textarea[readonly] { font-size: 17px; line-height: 1.7; }
+@media (max-width: 600px) {
+  .composer textarea[readonly] { min-height: 156px; font-size: 15px; }
+  .composer-tabs .preset-label { white-space: nowrap; }
+}

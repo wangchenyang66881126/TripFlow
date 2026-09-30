@@ -1,13 +1,22 @@
 """Pydantic 输入输出结构。"""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class TripCreate(BaseModel):
-    source_link: str = Field(min_length=1, max_length=2048)
+    # 保留旧字段名，兼容原链接客户端；现在也接收攻略正文 / 旅行想法。
+    source_link: str = Field(min_length=1, max_length=12000)
+    mode: Literal["guide", "idea"] = "guide"
+
+    @field_validator("source_link")
+    @classmethod
+    def non_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("请输入攻略或旅行想法")
+        return value.strip()
 
 
 class TripOut(BaseModel):

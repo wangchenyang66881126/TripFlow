@@ -1,0 +1,486 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-30",
+  "source_text": "重庆｜特种兵不绕路2日游‼️ 这是本土著亲自走过的路... https://xhslink.cn/o/10vTPLjLXy7 把文字复制下来，打开【小红书】查看详情。",
+  "title": "重庆｜特种兵不绕路2日游‼️",
+  "city": "重庆",
+  "summary": "预设演示 · 两天 16 站，按固定攻略展示。交通耗时与酒店评分为预存示例，实际出行以百度导航和预订平台为准。",
+  "places": [
+    {
+      "day": 1,
+      "seq": 1,
+      "name": "解放碑",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "人民解放纪念碑",
+      "poi_uid": "5922af1b1f8dff21128824a4",
+      "poi_address": "重庆市渝中区民族路177号",
+      "lat": 29.563326,
+      "lng": 106.583439,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "抗战胜利纪功碑暨人民解放纪念碑",
+        "source_url": "http://baike.baidu.com/item/%E6%8A%97%E6%88%98%E8%83%9C%E5%88%A9%E7%BA%AA%E5%8A%9F%E7%A2%91%E6%9A%A8%E4%BA%BA%E6%B0%91%E8%A7%A3%E6%94%BE%E7%BA%AA%E5%BF%B5%E7%A2%91"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 2,
+      "name": "山城步道",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "山城步道",
+      "poi_uid": "d216d8b94ad855fcb320a8d6",
+      "poi_address": "重庆市渝中区中兴路234号旁",
+      "lat": 29.556854,
+      "lng": 106.573022,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "山城步道",
+        "source_url": "http://baike.baidu.com/subview/13566581/14118956.htm"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 3,
+      "name": "十八梯",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "十八梯",
+      "poi_uid": "f42f24a108f3e266abf72980",
+      "poi_address": "重庆市渝中区",
+      "lat": 29.556821,
+      "lng": 106.578756,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "十八梯传统风貌区",
+        "source_url": "http://baike.baidu.com/item/%E5%8D%81%E5%85%AB%E6%A2%AF%E4%BC%A0%E7%BB%9F%E9%A3%8E%E8%B2%8C%E5%8C%BA"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 4,
+      "name": "白象居",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "白象居",
+      "poi_uid": "fe5a95fbb89f14a5c156ac88",
+      "poi_address": "重庆市渝中区朝天门街道白象街1~6号",
+      "lat": 29.562063,
+      "lng": 106.59198,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "白象居",
+        "source_url": "http://baike.baidu.com/item/%E7%99%BD%E8%B1%A1%E5%B1%85"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 5,
+      "name": "湖广会馆",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "重庆湖广会馆",
+      "poi_uid": "09185c56c7c90b44f0193799",
+      "poi_address": "重庆市渝中区长滨路芭蕉园1号",
+      "lat": 29.563911,
+      "lng": 106.59334,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "重庆湖广会馆",
+        "source_url": "http://baike.baidu.com/subview/987990/987990.htm"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 6,
+      "name": "来福士",
+      "type": "其他",
+      "source_text": null,
+      "poi_name": "重庆来福士",
+      "poi_uid": "746d3f5a9fa0f35802294f85",
+      "poi_address": "重庆市渝中区接圣街8号",
+      "lat": 29.571152,
+      "lng": 106.594025,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "重庆来福士",
+        "source_url": "http://baike.baidu.com/view/7350038.htm"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 7,
+      "name": "洪崖洞",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "洪崖洞",
+      "poi_uid": "650ec435e626602804026ff8",
+      "poi_address": "渝中区",
+      "lat": 29.566718,
+      "lng": 106.585076,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "洪崖洞",
+        "source_url": "http://baike.baidu.com/view/561263.htm"
+      }
+    },
+    {
+      "day": 1,
+      "seq": 8,
+      "name": "江滩公园",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "嘉陵江石滩",
+      "poi_uid": "92329225c55c4b7d4354d7bf",
+      "poi_address": "重庆市两江新区北滨一路",
+      "lat": 29.573456,
+      "lng": 106.583383,
+      "geocode_status": "ok"
+    },
+    {
+      "day": 2,
+      "seq": 1,
+      "name": "鹅岭公园",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "鹅岭公园",
+      "poi_uid": "cac5fc76168003f32cb96d3c",
+      "poi_address": "重庆市渝中区鹅岭正街176号",
+      "lat": 29.555566,
+      "lng": 106.543065,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "鹅岭公园",
+        "source_url": "http://baike.baidu.com/view/66671.htm"
+      }
+    },
+    {
+      "day": 2,
+      "seq": 2,
+      "name": "鹅岭二厂",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "鹅岭二厂",
+      "poi_uid": "fb614d17b9cccb6441d63efa",
+      "poi_address": "重庆市渝中区鹅岭正街1号",
+      "lat": 29.557331,
+      "lng": 106.546366,
+      "geocode_status": "ok"
+    },
+    {
+      "day": 2,
+      "seq": 3,
+      "name": "李子坝",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "李子坝轻轨站观景平台",
+      "poi_uid": null,
+      "poi_address": "重庆市渝中区李子坝正街",
+      "lat": 29.5527,
+      "lng": 106.5391,
+      "geocode_status": "ok"
+    },
+    {
+      "day": 2,
+      "seq": 4,
+      "name": "人民大礼堂",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "重庆市人民大礼堂",
+      "poi_uid": "cdb116dbf944882397f08c4c",
+      "poi_address": "重庆市渝中区人民路173号",
+      "lat": 29.567873,
+      "lng": 106.560159,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "重庆市人民大礼堂",
+        "source_url": "http://baike.baidu.com/view/180862.htm"
+      }
+    },
+    {
+      "day": 2,
+      "seq": 5,
+      "name": "三峡博物馆",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "重庆中国三峡博物馆",
+      "poi_uid": "4f065204f854c8811ce999f1",
+      "poi_address": "重庆市渝中区人民路236号",
+      "lat": 29.568347,
+      "lng": 106.556883,
+      "geocode_status": "ok"
+    },
+    {
+      "day": 2,
+      "seq": 6,
+      "name": "观音桥",
+      "type": "其他",
+      "source_text": null,
+      "poi_name": "观音桥",
+      "poi_uid": "6cc2c10be23af68ef02d83f2",
+      "poi_address": "重庆市两江新区",
+      "lat": 29.586236,
+      "lng": 106.544707,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "观音桥商圈都市旅游区",
+        "source_url": "http://baike.baidu.com/item/%E8%A7%82%E9%9F%B3%E6%A1%A5%E5%95%86%E5%9C%88%E9%83%BD%E5%B8%82%E6%97%85%E6%B8%B8%E5%8C%BA"
+      }
+    },
+    {
+      "day": 2,
+      "seq": 7,
+      "name": "北仓文创园",
+      "type": "景点",
+      "source_text": null,
+      "poi_name": "北仓文创街区",
+      "poi_uid": "0d46a15066aee7b72afc4815",
+      "poi_address": "重庆市江北区观音桥塔坪55号",
+      "lat": 29.584826,
+      "lng": 106.544674,
+      "geocode_status": "ok"
+    },
+    {
+      "day": 2,
+      "seq": 8,
+      "name": "塔坪",
+      "type": "其他",
+      "source_text": null,
+      "poi_name": "塔坪",
+      "poi_uid": null,
+      "poi_address": "重庆市江北区塔坪",
+      "lat": 29.583,
+      "lng": 106.545,
+      "geocode_status": "ok",
+      "photo": {
+        "title": "塔坪",
+        "source_url": "http://baike.baidu.com/item/%E5%A1%94%E5%9D%AA"
+      }
+    }
+  ],
+  "days": [
+    {
+      "day": 1,
+      "segments": [
+        {
+          "from_place": "解放碑",
+          "to_place": "山城步道",
+          "mode": "驾车",
+          "distance_m": 2543,
+          "duration_s": 737,
+          "duration_text": "12分钟"
+        },
+        {
+          "from_place": "山城步道",
+          "to_place": "十八梯",
+          "mode": "驾车",
+          "distance_m": 1580,
+          "duration_s": 389,
+          "duration_text": "6分钟"
+        },
+        {
+          "from_place": "十八梯",
+          "to_place": "白象居",
+          "mode": "驾车",
+          "distance_m": 3214,
+          "duration_s": 733,
+          "duration_text": "12分钟"
+        },
+        {
+          "from_place": "白象居",
+          "to_place": "湖广会馆",
+          "mode": "驾车",
+          "distance_m": 2131,
+          "duration_s": 607,
+          "duration_text": "10分钟"
+        },
+        {
+          "from_place": "湖广会馆",
+          "to_place": "来福士",
+          "mode": "驾车",
+          "distance_m": 1619,
+          "duration_s": 376,
+          "duration_text": "6分钟"
+        },
+        {
+          "from_place": "来福士",
+          "to_place": "洪崖洞",
+          "mode": "驾车",
+          "distance_m": 2051,
+          "duration_s": 602,
+          "duration_text": "10分钟"
+        },
+        {
+          "from_place": "洪崖洞",
+          "to_place": "江滩公园",
+          "mode": "驾车",
+          "distance_m": 4622,
+          "duration_s": 806,
+          "duration_text": "13分钟"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "segments": [
+        {
+          "from_place": "鹅岭公园",
+          "to_place": "鹅岭二厂",
+          "mode": "步行",
+          "distance_m": 816,
+          "duration_s": 717,
+          "duration_text": "11分钟"
+        },
+        {
+          "from_place": "鹅岭二厂",
+          "to_place": "李子坝",
+          "mode": "驾车",
+          "distance_m": 3906,
+          "duration_s": 768,
+          "duration_text": "12分钟"
+        },
+        {
+          "from_place": "李子坝",
+          "to_place": "人民大礼堂",
+          "mode": "驾车",
+          "distance_m": 4481,
+          "duration_s": 1347,
+          "duration_text": "22分钟"
+        },
+        {
+          "from_place": "人民大礼堂",
+          "to_place": "三峡博物馆",
+          "mode": "驾车",
+          "distance_m": 2057,
+          "duration_s": 684,
+          "duration_text": "11分钟"
+        },
+        {
+          "from_place": "三峡博物馆",
+          "to_place": "观音桥",
+          "mode": "驾车",
+          "distance_m": 4656,
+          "duration_s": 1069,
+          "duration_text": "17分钟"
+        },
+        {
+          "from_place": "观音桥",
+          "to_place": "北仓文创园",
+          "mode": "步行",
+          "distance_m": 415,
+          "duration_s": 373,
+          "duration_text": "6分钟"
+        },
+        {
+          "from_place": "北仓文创园",
+          "to_place": "塔坪",
+          "mode": "驾车",
+          "distance_m": 1556,
+          "duration_s": 483,
+          "duration_text": "8分钟"
+        }
+      ]
+    }
+  ],
+  "hotels": [
+    {
+      "day": 1,
+      "anchor": {
+        "name": "江滩公园",
+        "lat": 29.573456,
+        "lng": 106.583383
+      },
+      "hotels": [
+        {
+          "tier": "budget",
+          "tier_label": "经济实惠",
+          "grade": "经济型",
+          "name": "如家酒店(重庆解放碑洪崖洞店)",
+          "uid": "5211d21946800d417dc8761e",
+          "address": "解放碑临江路6号",
+          "rating": 4.7,
+          "comment_num": 51,
+          "distance_m": 690,
+          "lat": 29.56727,
+          "lng": 106.583993
+        },
+        {
+          "tier": "comfort",
+          "tier_label": "舒适品质",
+          "grade": "舒适型",
+          "name": "全季酒店(重庆解放碑洪崖洞店)",
+          "uid": "a3e2570cd5a4089fc8213d06",
+          "address": "民族路99号帝都广场B塔1楼",
+          "rating": 4.7,
+          "comment_num": 60,
+          "distance_m": 881,
+          "lat": 29.565881,
+          "lng": 106.586061
+        },
+        {
+          "tier": "premium",
+          "tier_label": "高端享受",
+          "grade": "豪华型",
+          "name": "重庆来福士洲际酒店",
+          "uid": "af48c42fb50a1caf38e4a635",
+          "address": "长江滨江路2号",
+          "rating": 4.8,
+          "comment_num": 90,
+          "distance_m": 1084,
+          "lat": 29.571673,
+          "lng": 106.5944
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "anchor": {
+        "name": "塔坪",
+        "lat": 29.583,
+        "lng": 106.545
+      },
+      "hotels": [
+        {
+          "tier": "budget",
+          "tier_label": "经济实惠",
+          "grade": "经济型",
+          "name": "汉庭酒店(重庆观音桥地铁站店)",
+          "uid": "ede1528e64ccbb308836eeba",
+          "address": "中野路5号",
+          "rating": 4.7,
+          "comment_num": 191,
+          "distance_m": 532,
+          "lat": 29.578663,
+          "lng": 106.54267
+        },
+        {
+          "tier": "comfort",
+          "tier_label": "舒适品质",
+          "grade": "舒适型",
+          "name": "美宿天晴高空全景酒店(观音桥店)",
+          "uid": "deb87c4882b59ec1250bd03a",
+          "address": "重庆市两江新区北城天街万汇中心2栋32楼",
+          "rating": 4.9,
+          "comment_num": 37,
+          "distance_m": 400,
+          "lat": 29.585537,
+          "lng": 106.547934
+        },
+        {
+          "tier": "premium",
+          "tier_label": "高端享受",
+          "grade": "高档型",
+          "name": "罗博先生酒店(重庆观音桥店)",
+          "uid": "0154918177a4058f9d95de8e",
+          "address": "北城天街40号2幢28-4",
+          "rating": 5.0,
+          "comment_num": 17,
+          "distance_m": 457,
+          "lat": 29.585668,
+          "lng": 106.548589
+        }
+      ]
+    }
+  ]
+}

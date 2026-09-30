@@ -7,12 +7,75 @@ from ..core.config import ASSETS_DIR
 from ..core.errors import AppError
 from ..core.logging import get_logger
 from ..models import Place, Task, Trip
-from . import geocode, ocr, route, snapshot, xhs
+from . import geocode, ocr, planner, route, snapshot, xhs
 from .extract import extract_places
 
 log = get_logger(__name__)
 
 CITIES = ("北京", "上海", "广州", "深圳", "重庆", "成都")
+
+
+def load_plan_json(trip_id: str) -> dict | None:
+    path = ASSETS_DIR / trip_id / "plan.json"
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if payload.get("schema_version") != 1:
+            return None
+        planner.Itinerary.model_validate(payload["itinerary"])
+        return payload
+    except (ValueError, KeyError, TypeError):
+        raise AppError("PLAN_DATA_INVALID", "保存的行程暂时无法读取，请重新提交。", 409)
+
+
+def run_text(db, trip: Trip, task: Task) -> None:
+    """新入口：先保存模型产物，再逐点定位；重启后复用已完成的部分。"""
+    saved = load_plan_json(trip.id)
+    if saved:
+        plan = planner.Itinerary.model_validate(saved["itinerary"])
+    else:
+        task.progress = "正在根据想法安排旅程…" if task.kind == "plan" else "正在整理攻略里的地点…"
+        db.commit()
+        plan, meta = planner.generate_itinerary(trip.source_link, "idea" if task.kind == "plan" else "guide")
+        path = ASSETS_DIR / trip.id / "plan.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(json.dumps({"schema_version": 1, "itinerary": plan.model_dump(), "model_usage": meta}, ensure_ascii=False), encoding="utf-8")
+        temporary.replace(path)
+    trip.title, trip.city = plan.title, plan.city
+    existing = {(p.day, p.seq): p for p in trip.places}
+    for p in plan.places:
+        if (p.day, p.seq) not in existing:
+            place = Place(trip_id=trip.id, day=p.day, seq=p.seq, name=p.name,
+                          type=p.type, source_text=p.note or None, confirmed=False,
+                          geocode_status="pending")
+            db.add(place)
+            existing[(p.day, p.seq)] = place
+    db.commit()
+    for index, p in enumerate(plan.places, 1):
+        place = existing[(p.day, p.seq)]
+        if place.geocode_status != "pending":
+            continue
+        task.progress = f"百度地图核对地点 {index}/{len(plan.places)}"
+        db.commit()
+        try:
+            poi, cands = geocode.geocode_place(p.name, plan.city)
+            place.candidates = cands or None
+            if poi and poi.get("lat") is not None and poi.get("lng") is not None:
+                place.poi_name, place.poi_uid = poi.get("name"), poi.get("uid")
+                place.poi_address = poi.get("address")
+                place.lat, place.lng = poi["lat"], poi["lng"]
+                place.geocode_status = "ok"
+            else:
+                place.geocode_status = "failed"
+        except Exception as exc:
+            log.warning("地点核对失败 trip=%s index=%s type=%s", trip.id, index, type(exc).__name__)
+            place.geocode_status = "failed"
+        db.commit()
+    trip.status = "awaiting_confirm"
+    task.progress = "行程已整理，请核对地点后生成路线。"
+    db.commit()
 
 
 def run_parse(db, trip: Trip, task: Task) -> None:

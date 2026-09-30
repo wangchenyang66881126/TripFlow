@@ -14,10 +14,10 @@ from urllib.parse import quote
 DIRECTION_URI = "baidumap://map/direction"
 MARKER_URI = "baidumap://map/marker"
 # 网页版（电脑端）：
-# - map.baidu.com/dir 路线页支持途经点，但格式非官方公开（从网页版分享链接反推），可能随百度改版失效；
-# - 官方 Web 端 URI api.map.baidu.com/direction 稳定，但只含起终点，作兜底。
+# - 直达百度网页版分享路线；公交 bt / 步行 walk / 骑行 cycle 已实测。
+# - 旧 api.map.baidu.com/direction 在浏览器中连接中断，不再用于用户跳转。
+# - 分享格式由百度网页版生成，后续改版需继续实测兼容。
 WEB_ROUTE_URI = "https://map.baidu.com/dir"
-WEB_DIRECTION_URI = "https://api.map.baidu.com/direction"
 # 网页版 @ 中心使用 BD09MC 投影坐标；不能直接填写 BD09 经纬度。
 
 # bd09ll → bd09mc（百度墨卡托）分段多项式系数，取自百度 JSAPI
@@ -105,6 +105,8 @@ def _web_point(p, via: bool = False) -> str:
 
 _WEB_DIR_EXTRA = {
     "nav": ("mrs=0", "version=4", "route_traffic=1", "sy=0"),  # 驾车
+    "bt": ("version=5",),  # 公交；不固定出发时间，由百度按当前时间规划
+    "walk": ("version=6", "run=0", "spath_type=1"),  # 步行
     "cycle": ("version=6", "vehicle=0", "spath_type=1"),  # 骑行
 }
 
@@ -130,17 +132,13 @@ def build_web_route_uri(points, querytype: str = "nav") -> str:
 
 
 def build_web_direction_uri(a, b, city: str | None, src: str, mode: str = "driving") -> str:
-    """官方 Web 端 URI，mode 支持 driving / transit / walking（不支持骑行）。"""
-    q = [
-        f"origin={_endpoint(a)}",
-        f"destination={_endpoint(b)}",
-        f"mode={mode}",
-        "coord_type=bd09ll",
-    ]
-    if city:
-        q.append(f"region={quote(city, safe='')}")
-    q += ["output=html", f"src={quote(src, safe='.')}"]
-    return f"{WEB_DIRECTION_URI}?{'&'.join(q)}"
+    """相邻两站直达 HTTPS 路线页；保留函数签名供已有调用使用。
+
+    UID 与百度墨卡托坐标共同定位，避免同名地点被搜到别的城市。
+    不经旧 URI 跳转，也不将演示耗时或出发时间带入百度实时规划。
+    """
+    querytype = {"driving": "nav", "transit": "bt", "walking": "walk", "riding": "cycle"}[mode]
+    return build_web_route_uri([a, b], querytype=querytype)
 
 
 def build_web_marker_uri(p, src: str) -> str:
@@ -195,8 +193,7 @@ def build_day_segments(points, city: str | None, src: str) -> list[dict]:
                 },
                 "riding": {
                     "uri": build_direction_uri([a, b], city, src, mode="riding"),
-                    # 官方 Web URI 不支持骑行，走网页版 dir 路线页
-                    "web_uri": build_web_route_uri([a, b], querytype="cycle"),
+                    "web_uri": build_web_direction_uri(a, b, city, src, mode="riding"),
                 },
             }
         )

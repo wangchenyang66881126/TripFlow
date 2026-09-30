@@ -1,4 +1,5 @@
 export type TaskStatus = "pending" | "running" | "done" | "failed";
+export type InputMode = "guide" | "idea";
 
 export interface Task {
   id: string;
@@ -47,10 +48,17 @@ export interface Trip {
 }
 
 export interface PlacesResponse {
+  preset?: boolean;
   trip_id: string;
   status: string;
   title?: string | null;
   city?: string | null;
+  input_mode?: InputMode;
+  input_text?: string;
+  summary?: string;
+  task_id?: string | null;
+  task_status?: TaskStatus | null;
+  task_error?: string | null;
   places: Place[];
 }
 

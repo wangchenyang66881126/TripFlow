@@ -1,3 +1,3 @@
-from .models import Place, Task, Trip
+from .models import AIBudgetDay, AIUsage, Place, Task, Trip
 
-__all__ = ["Trip", "Place", "Task"]
+__all__ = ["Trip", "Place", "Task", "AIBudgetDay", "AIUsage"]

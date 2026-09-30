@@ -129,11 +129,11 @@ def test_web_uri_escapes_slash_and_dollar():
 def test_web_basic_uri_origin_destination_only():
     legs = build_day_legs([_place(i) for i in range(5)], "重庆", 15, SRC)
     web = legs[0]["web_basic_uri"]
-    assert web.startswith("https://api.map.baidu.com/direction?")
+    assert web.startswith("https://map.baidu.com/dir/")
     q = _query(web)
-    assert q["origin"] == ["name:景点0|latlng:29.500000,106.500000"]
-    assert q["destination"] == ["name:景点4|latlng:29.540000,106.540000"]
-    assert q["output"] == ["html"] and q["region"] == ["重庆"] and q["src"] == [SRC]
+    assert "$$uid0$$" in q["sn"][0] and "$$景点0$$" in q["sn"][0]
+    assert "$$uid4$$" in q["en"][0] and "$$景点4$$" in q["en"][0]
+    assert " to:" not in q["en"][0] and q["querytype"] == ["nav"]
 
 
 def test_web_uri_single_point_marker():
@@ -166,11 +166,38 @@ def test_segments_pairwise_all_modes():
 
 def test_segments_web_links():
     seg = build_day_segments([_place(0), _place(1)], "重庆", SRC)[0]
-    for mode in ("transit", "walking"):
+    for mode, querytype in [("transit", "bt"), ("walking", "walk"), ("riding", "cycle")]:
         web = seg[mode]["web_uri"]
-        assert web.startswith("https://api.map.baidu.com/direction?") and _query(web)["mode"] == [mode]
-    ride = seg["riding"]["web_uri"]  # 官方 Web URI 不支持骑行
-    assert ride.startswith("https://map.baidu.com/dir/") and _query(ride)["querytype"] == ["cycle"]
+        assert web.startswith("https://map.baidu.com/dir/")
+        q = _query(web)
+        assert q["querytype"] == [querytype]
+        assert "$$uid0$$" in q["sn"][0] and "$$uid1$$" in q["en"][0]
+        assert "exptime" not in q  # 不把演示日固定为真实导航出发时间
+        assert "api.map.baidu.com" not in web and "ak" not in q
+
+
+def test_segment_web_preserves_baidu_coordinates_without_uid():
+    a = _place(0, uid=False, lat=29.563326, lng=106.583439)
+    b = _place(1, uid=False, lat=29.556854, lng=106.573022)
+    a.name, b.name = "解放碑", "山城步道"
+    seg = build_day_segments([a, b], "重庆", SRC)[0]
+    for mode in ("transit", "walking", "riding"):
+        q = _query(seg[mode]["web_uri"])
+        assert "11864943.26,3426267.49" in q["sn"][0]
+        assert "11863783.63,3425443.46" in q["en"][0]
+        assert "$$解放碑$$" in q["sn"][0] and "$$山城步道$$" in q["en"][0]
+
+
+def test_all_days_segment_links_keep_each_adjacent_pair():
+    for day in (1, 2):
+        places = [_place(day * 10 + i) for i in range(8)]
+        segments = build_day_segments(places, "重庆", SRC)
+        assert len(segments) == 7
+        for a, b, seg in zip(places, places[1:], segments):
+            for mode in ("transit", "walking", "riding"):
+                q = _query(seg[mode]["web_uri"])
+                assert f"$${a.poi_uid}$$" in q["sn"][0]
+                assert f"$${b.poi_uid}$$" in q["en"][0]
 
 
 def test_segments_need_two_points():

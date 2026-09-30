@@ -17,7 +17,7 @@ from ..services import hotels as hotels_svc
 from ..services import map as map_svc
 from ..services import nav as nav_svc
 from ..services import photos as photos_svc
-from ..services import pipeline, runner
+from ..services import ai_budget, pipeline, planner, preset, runner
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
@@ -31,12 +31,22 @@ def _trip_or_404(db: Session, trip_id: str) -> Trip:
 
 @router.post("", status_code=201)
 def create_trip(body: TripCreate, db: Session = Depends(get_db)):
-    trip = Trip(id=uuid.uuid4().hex[:8], source_link=body.source_link, status="created")
+    if settings.preset_demo:
+        raise AppError("DEMO_MODE_ONLY", "当前为固定演示，请刷新首页后体验重庆两日游。", 409)
+    ai_budget.assert_available()
+    kind, source = planner.classify_input(body.source_link, body.mode)
+    trip = Trip(id=uuid.uuid4().hex[:8], source_link=source, status="created")
     db.add(trip)
     db.commit()
     db.refresh(trip)
-    task_id = runner.start_task(trip.id, "parse")
+    task_id = runner.start_task(trip.id, kind)
     return {"trip_id": trip.id, "task_id": task_id}
+
+
+@router.post("/preset")
+def open_preset(db: Session = Depends(get_db)):
+    trip = preset.ensure_trip(db)
+    return {"trip_id": trip.id, "status": trip.status, "preset": True}
 
 
 @router.get("/{trip_id}")
@@ -49,11 +59,22 @@ def get_trip(trip_id: str, db: Session = Depends(get_db)):
 def get_places(trip_id: str, db: Session = Depends(get_db)):
     trip = _trip_or_404(db, trip_id)
     places = sorted(trip.places, key=lambda p: (p.day, p.seq))
+    tasks = sorted(trip.tasks, key=lambda t: t.created_at)
+    generation = next((t for t in tasks if t.kind in ("parse", "guide", "plan")), None)
+    latest = next((t for t in reversed(tasks) if t.kind != "export"), None)
+    plan = pipeline.load_plan_json(trip.id)
     return {
         "trip_id": trip.id,
         "status": trip.status,
         "title": trip.title,
         "city": trip.city,
+        "input_mode": "idea" if generation and generation.kind == "plan" else "guide",
+        "input_text": trip.source_link,
+        "summary": preset.data()["summary"] if preset.is_preset(trip_id) else (plan.get("itinerary", {}).get("summary", "") if plan else ""),
+        "preset": preset.is_preset(trip_id),
+        "task_id": latest.id if latest else None,
+        "task_status": latest.status if latest else None,
+        "task_error": latest.error if latest else None,
         "places": [serialize_place(p) for p in places],
     }
 
@@ -61,6 +82,7 @@ def get_places(trip_id: str, db: Session = Depends(get_db)):
 @router.patch("/{trip_id}/places/{place_id}")
 def update_place(trip_id: str, place_id: int, body: PlaceUpdate, db: Session = Depends(get_db)):
     trip = _trip_or_404(db, trip_id)
+    preset.reject_edit(trip_id)
     if trip.status != "awaiting_confirm":
         raise AppError("INVALID_STATE", f"当前状态不可编辑（{trip.status}）", status_code=409)
     place = db.get(Place, place_id)
@@ -79,6 +101,7 @@ def update_place(trip_id: str, place_id: int, body: PlaceUpdate, db: Session = D
 @router.post("/{trip_id}/route")
 def create_route(trip_id: str, db: Session = Depends(get_db)):
     trip = _trip_or_404(db, trip_id)
+    preset.reject_edit(trip_id)
     pipeline.validate_route_ready(trip.status, trip.places)
     task_id = runner.start_task(trip.id, "route")
     return {"trip_id": trip.id, "task_id": task_id}
@@ -153,6 +176,8 @@ def get_app_nav(trip_id: str, db: Session = Depends(get_db)):
 def get_hotels(trip_id: str, db: Session = Depends(get_db)):
     """推荐住宿：每天最后一站附近按经济 / 舒适 / 高端各一家，数据来自百度地点检索。"""
     trip = _trip_or_404(db, trip_id)
+    if preset.is_preset(trip_id):
+        return preset.hotels()
     return hotels_svc.recommend(trip_id, trip.places)
 
 
@@ -160,13 +185,18 @@ def get_hotels(trip_id: str, db: Session = Depends(get_db)):
 def get_photos(trip_id: str, db: Session = Depends(get_db)):
     """地点实景图（百度百科词条首图）；没找到可靠图片的地点不返回。"""
     trip = _trip_or_404(db, trip_id)
+    if preset.is_preset(trip_id):
+        return {"trip_id": trip_id, "photos": preset.photos(trip.places)}
     return {"trip_id": trip_id, "photos": photos_svc.photos_for_trip(trip_id, trip.places, trip.city)}
 
 
 @router.get("/{trip_id}/photos/{place_id}.jpg")
 def get_photo_file(trip_id: str, place_id: int, db: Session = Depends(get_db)):
-    _trip_or_404(db, trip_id)
-    path = photos_svc.photo_path(trip_id, place_id)
+    trip = _trip_or_404(db, trip_id)
+    place = next((p for p in trip.places if p.id == place_id), None)
+    if not place:
+        raise AppError("NOT_FOUND", "地点不存在", status_code=404)
+    path = preset.photo_path(place) if preset.is_preset(trip_id) else photos_svc.photo_path(trip_id, place_id)
     if not path.exists():
         raise AppError("NO_PHOTO", "该地点暂无图片", status_code=404)
     return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400"})

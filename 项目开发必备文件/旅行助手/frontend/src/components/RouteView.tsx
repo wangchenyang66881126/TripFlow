@@ -1,8 +1,10 @@
 import { BedDouble, Bike, Bus, Clock, Download, ExternalLink, Footprints, Loader2, MapPin, Navigation, Share2, Star } from "lucide-react";
 import type { AppNavResponse, HotelDay, HotelsResponse, NavLeg, NavLink, NavSegment, RouteResponse } from "../lib/types";
 import MapView from "./MapView";
+import BaiduLink from "./BaiduLink";
 
 interface Props {
+  preset?: boolean;
   route: RouteResponse;
   nav: AppNavResponse | null;
   onAppNav: (leg: NavLeg) => void;
@@ -50,18 +52,16 @@ function SegmentModes({
   return (
     <div className="route-modes">
       {SEGMENT_MODES.map(({ key, label, Icon }) => (
-        <a
+        <BaiduLink
           key={key}
-          href={seg[key].uri}
-          onClick={(e) => {
-            e.preventDefault();
-            onSegmentNav(seg[key]);
-          }}
+          link={seg[key]}
+          onAppNav={onSegmentNav}
+          aria-label={`${label}导航：${seg.from_place}到${seg.to_place}`}
           className="route-mode"
         >
           <Icon size={12} />
           {label}
-        </a>
+        </BaiduLink>
       ))}
     </div>
   );
@@ -71,7 +71,7 @@ function fmtDistance(m: number): string {
   return m < 1000 ? `${m} 米` : `${(m / 1000).toFixed(1)} 公里`;
 }
 
-function HotelSection({ data, loading, error, onSegmentNav }: { data?: HotelDay; loading: boolean; error: string; onSegmentNav: (link: NavLink) => void }) {
+function HotelSection({ data, loading, error, onSegmentNav, preset }: { data?: HotelDay; loading: boolean; error: string; onSegmentNav: (link: NavLink) => void; preset?: boolean }) {
   if (!loading && !error && !data) return null;
   const titleId = `hotel-title-${data?.day ?? "loading"}`;
   return <section className="route-hotels" aria-labelledby={titleId}>
@@ -83,13 +83,13 @@ function HotelSection({ data, loading, error, onSegmentNav }: { data?: HotelDay;
         <div className="hotel-tier"><strong>{h.tier_label}</strong>{h.grade && <small>{h.grade}</small>}</div>
         <div className="hotel-main"><strong>{h.name}</strong>{h.address && <p>{h.address}</p>}
           <div className="hotel-meta"><span className="hotel-rating"><Star size={11} />{h.rating.toFixed(1)}</span><span>{h.comment_num} 条评价</span><span>距{data.anchor.name} {fmtDistance(h.distance_m)}</span></div></div>
-        <a className="route-mode hotel-locate" href={h.link.uri} onClick={e => { e.preventDefault(); onSegmentNav(h.link); }}><MapPin size={12} />查看位置</a>
+        <BaiduLink className="route-mode hotel-locate" link={h.link} onAppNav={onSegmentNav}><MapPin size={12} />查看位置</BaiduLink>
       </article>)}</div>}
-    <p className="hotel-note">档次与评分来自百度地图，价格和房态以预订平台为准。</p>
+    <p className="hotel-note">{preset ? "预设住宿示例 · 评分为已保存的快照，价格和房态以预订平台为准。" : "档次与评分来自百度地图，价格和房态以预订平台为准。"}</p>
   </section>;
 }
 
-export default function RouteView({ route, nav, onAppNav, onSegmentNav, hotels, hotelsError, onShare, onExport, exporting, exportProgress }: Props) {
+export default function RouteView({ route, nav, onAppNav, onSegmentNav, hotels, hotelsError, onShare, onExport, exporting, exportProgress, preset }: Props) {
   return <div className="route-results">
     <div className="route-intro"><span className="eyebrow">READY TO EXPLORE</span><p>把每一站，连成今天的风景。</p></div>
     {route.days.map(d => {
@@ -119,7 +119,7 @@ export default function RouteView({ route, nav, onAppNav, onSegmentNav, hotels, 
           {!!navDay?.segments.length && <p className="route-transport-note">公交、步行、骑行可按相邻两站分别导航。</p>}
         </div>
         {!!navDay?.legs.length && <div className="route-navigation">{navDay.legs.map(leg => <a key={leg.leg} href={leg.uri} onClick={event => {event.preventDefault(); onAppNav(leg);}} className="black-button" title={`${leg.from_place} → ${leg.to_place}`}><Navigation size={15} /><span>{navDay.legs.length > 1 ? `驾车导航 · 第 ${leg.leg} 段` : "在百度地图开始导航"}</span><ExternalLink size={13} /></a>)}</div>}
-        <HotelSection data={hotels?.days.find(h => h.day === d.day)} loading={!hotels && !hotelsError} error={hotelsError} onSegmentNav={onSegmentNav} />
+        <HotelSection data={hotels?.days.find(h => h.day === d.day)} loading={!hotels && !hotelsError} error={hotelsError} onSegmentNav={onSegmentNav} preset={preset} />
       </article>;
     })}
     <div className="route-save-bar"><div><strong>留住这份旅行灵感</strong><p>分享给同行的人，或保存为长图。</p></div><div className="route-save-actions"><button onClick={onShare}><Share2 size={15} />分享</button><button onClick={onExport} disabled={exporting}>{exporting ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}{exporting ? "导出中" : "保存长图"}</button></div></div>

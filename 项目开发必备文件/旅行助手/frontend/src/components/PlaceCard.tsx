@@ -79,6 +79,7 @@ export default function PlaceCard({ place, photo, onUpdate, selected, onSelect }
         )}
       </div>
 
+      {place.source_text && <p className="place-note">{place.source_text}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
         <label className="flex items-center gap-1.5">
           <span className="text-xs text-[#717171]">天</span>
@@ -87,8 +88,7 @@ export default function PlaceCard({ place, photo, onUpdate, selected, onSelect }
             onChange={(e) => onUpdate(place.id, { day: parseInt(e.target.value, 10) })}
             className="rounded-lg border border-[#DDDDDD] bg-white px-2 py-1 outline-none"
           >
-            <option value={1}>Day 1</option>
-            <option value={2}>Day 2</option>
+            {Array.from({ length: Math.max(7, place.day) }, (_, i) => <option key={i + 1} value={i + 1}>Day {i + 1}</option>)}
           </select>
         </label>
 

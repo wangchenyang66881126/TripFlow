@@ -10,6 +10,7 @@ from pydantic import BaseModel, ValidationError
 from ..core.config import settings
 from ..core.errors import AppError
 from ..core.logging import get_logger
+from . import model_gateway
 
 log = get_logger(__name__)
 
@@ -74,32 +75,23 @@ def extract_places(city: str, ocr_text: str, max_retries: int = 3) -> tuple[list
     if not settings.deepseek_api_key:
         raise AppError("NO_MODEL_KEY", "未配置 DeepSeek API Key", status_code=503)
 
-    from openai import OpenAI  # noqa: PLC0415
-
-    import httpx
-
     prompt = load_prompt().format(city=city, ocr_text=ocr_text)
-    client = OpenAI(
-        api_key=settings.deepseek_api_key,
-        base_url=settings.deepseek_base_url,
-        timeout=60,
-        http_client=httpx.Client(trust_env=False),
-    )
-
+    tokens = 0
     for attempt in range(1, max_retries + 1):
         try:
-            resp = client.chat.completions.create(
-                model=settings.deepseek_model,
+            resp = model_gateway.create_completion(
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                response_format={"type": "json_object"},
+                temperature=0.1, max_tokens=8192, purpose="extract",
             )
+            usage = getattr(resp, "usage", None)
+            tokens += usage.total_tokens if usage else 0
             content = resp.choices[0].message.content or ""
             places = parse_extraction(content)
             if places:
-                tokens = resp.usage.total_tokens if resp.usage else 0
                 return places, {"attempts": attempt, "tokens": tokens, "compliant_on_first": attempt == 1}
             log.warning("抽取结果为空（第 %s 次）", attempt)
+        except AppError:
+            raise
         except Exception as e:  # noqa: BLE001
-            log.warning("抽取第 %s 次失败：%s", attempt, e)
+            log.warning("抽取第 %s 次失败 type=%s", attempt, type(e).__name__)
     raise AppError("EXTRACT_FAILED", f"地点抽取失败（已重试 {max_retries} 次）", status_code=502)
